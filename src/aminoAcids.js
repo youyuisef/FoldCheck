@@ -1,0 +1,24 @@
+const aminoAcids = {
+  ALA: { name: "Alanine", letter: "A", formula: "C3H7NO2", mass: 89.09, category: "Nonpolar", sideChain: "–CH₃", description: "A small amino acid with a methyl side chain. It can contribute to protein packing and stability." },
+  ARG: { name: "Arginine", letter: "R", formula: "C6H14N4O2", mass: 174.20, category: "Positively charged", sideChain: "Guanidinium-containing", description: "A basic amino acid that often participates in electrostatic interactions and hydrogen bonding." },
+  ASN: { name: "Asparagine", letter: "N", formula: "C4H8N2O3", mass: 132.12, category: "Polar, uncharged", sideChain: "Amide-containing", description: "A polar amino acid capable of forming hydrogen bonds through its amide side chain." },
+  ASP: { name: "Aspartic acid", letter: "D", formula: "C4H7NO4", mass: 133.10, category: "Negatively charged", sideChain: "Carboxyl-containing", description: "An acidic amino acid that is usually negatively charged at physiological pH." },
+  CYS: { name: "Cysteine", letter: "C", formula: "C3H7NO2S", mass: 121.16, category: "Polar, uncharged", sideChain: "–CH₂–SH", description: "Contains sulfur and can form disulfide bonds that stabilise protein structures." },
+  GLN: { name: "Glutamine", letter: "Q", formula: "C5H10N2O3", mass: 146.15, category: "Polar, uncharged", sideChain: "Amide-containing", description: "A polar amino acid that can participate in hydrogen bonding." },
+  GLU: { name: "Glutamic acid", letter: "E", formula: "C5H9NO4", mass: 147.13, category: "Negatively charged", sideChain: "Carboxyl-containing", description: "An acidic amino acid frequently involved in electrostatic interactions." },
+  GLY: { name: "Glycine", letter: "G", formula: "C2H5NO2", mass: 75.07, category: "Special: flexible", sideChain: "–H", description: "The smallest amino acid. Its hydrogen side chain allows greater backbone flexibility." },
+  HIS: { name: "Histidine", letter: "H", formula: "C6H9N3O2", mass: 155.16, category: "Polar, ionisable", sideChain: "Imidazole-containing", description: "Its imidazole group can gain or lose a proton near physiological pH, making it useful in enzyme catalysis." },
+  ILE: { name: "Isoleucine", letter: "I", formula: "C6H13NO2", mass: 131.17, category: "Nonpolar", sideChain: "Branched hydrocarbon", description: "A hydrophobic amino acid that commonly contributes to protein core packing." },
+  LEU: { name: "Leucine", letter: "L", formula: "C6H13NO2", mass: 131.17, category: "Nonpolar", sideChain: "Branched hydrocarbon", description: "A hydrophobic amino acid frequently found in protein interiors." },
+  LYS: { name: "Lysine", letter: "K", formula: "C6H14N2O2", mass: 146.19, category: "Positively charged", sideChain: "Terminal amino group", description: "A basic amino acid that often forms electrostatic interactions with negatively charged groups." },
+  MET: { name: "Methionine", letter: "M", formula: "C5H11NO2S", mass: 149.21, category: "Nonpolar", sideChain: "Sulfur-containing thioether", description: "Contains sulfur and commonly serves as the first amino acid during protein synthesis." },
+  PHE: { name: "Phenylalanine", letter: "F", formula: "C9H11NO2", mass: 165.19, category: "Aromatic, nonpolar", sideChain: "Phenyl ring", description: "Contains an aromatic ring and often contributes to hydrophobic packing." },
+  PRO: { name: "Proline", letter: "P", formula: "C5H9NO2", mass: 115.13, category: "Special: conformationally restricted", sideChain: "Ring bonded to backbone nitrogen", description: "Its cyclic structure restricts backbone movement and can influence turns and secondary structure." },
+  SER: { name: "Serine", letter: "S", formula: "C3H7NO3", mass: 105.09, category: "Polar, uncharged", sideChain: "–CH₂–OH", description: "Contains a hydroxyl group and can participate in hydrogen bonding and phosphorylation." },
+  THR: { name: "Threonine", letter: "T", formula: "C4H9NO3", mass: 119.12, category: "Polar, uncharged", sideChain: "Hydroxyl-containing", description: "A polar amino acid that can participate in hydrogen bonding and phosphorylation." },
+  TRP: { name: "Tryptophan", letter: "W", formula: "C11H12N2O2", mass: 204.23, category: "Aromatic", sideChain: "Indole ring", description: "A large aromatic amino acid that can contribute to protein packing and molecular interactions." },
+  TYR: { name: "Tyrosine", letter: "Y", formula: "C9H11NO3", mass: 181.19, category: "Aromatic, polar", sideChain: "Phenolic hydroxyl", description: "Contains an aromatic ring and hydroxyl group, and can be phosphorylated." },
+  VAL: { name: "Valine", letter: "V", formula: "C5H11NO2", mass: 117.15, category: "Nonpolar", sideChain: "Branched hydrocarbon", description: "A hydrophobic amino acid that often contributes to protein core packing." }
+};
+
+export default aminoAcids;
