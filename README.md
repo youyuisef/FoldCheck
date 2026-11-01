@@ -16,6 +16,8 @@ I wanted to create a website where people could explore protein structures, inve
 
 
 
+
+
 LIVE WEBSITE
 
 
@@ -25,6 +27,8 @@ https://fold-check-seven.vercel.app
 
 
 You can use FoldCheck in your browser!
+
+
 
 
 
@@ -60,6 +64,9 @@ I used crambin (PDB ID: 1CRN) and human p53 (UniProt ID: P04637) while developin
 
 
 
+
+
+
 HOW I STARTED
 
 
@@ -73,6 +80,9 @@ I wanted the website to be understandable even if someone didn't know much about
 
 
 After working on the introduction, I moved on to the actual protein viewer.
+
+
+
 
 
 
@@ -110,6 +120,8 @@ But when those features finally started working together, it was VERY satisfying
 
 
 
+
+
 BUILDING THE REST OF FOLDCHECK
 
 
@@ -134,6 +146,9 @@ I found it really interesting learning about things like pLDDT and PAE, especial
 
 
 
+
+
+
 WHAT I ENJOYED
 
 
@@ -154,6 +169,9 @@ I also enjoyed learning things that I wouldn't normally cover in school yet, par
 
 
 
+
+
+
 WHAT I LEARNED
 
 
@@ -167,6 +185,9 @@ I learned a lot about connecting different parts of an application, managing int
 
 
 On the science side, I learned much more about proteins, AlphaFold, confidence scores and how predicted structures can be investigated.
+
+
+
 
 
 
@@ -188,6 +209,8 @@ These resources helped me with the scientific information and molecular visualis
 
 
 
+
+
 IMPORTANT NOTE
 
 
@@ -201,6 +224,8 @@ It's intended for exploring protein structures and investigating confidence and 
 
 
 FoldCheck is an independent student project and isn't officially affiliated with the organisations listed above.
+
+
 
 
 
