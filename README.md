@@ -18,7 +18,7 @@ I wanted to create a website where people could explore protein structures, inve
 
 
 
-LIVE WEBSITE
+#LIVE WEBSITE
 
 
 
@@ -32,7 +32,7 @@ You can use FoldCheck in your browser!
 
 
 
-WHAT DOES FOLDCHECK DO?
+#WHAT DOES FOLDCHECK DO?
 
 
 
@@ -67,7 +67,7 @@ I used crambin (PDB ID: 1CRN) and human p53 (UniProt ID: P04637) while developin
 
 
 
-HOW I STARTED
+#HOW I STARTED
 
 
 
@@ -88,7 +88,7 @@ After working on the introduction, I moved on to the actual protein viewer.
 
 
 
-THE HARDEST PART
+#THE HARDEST PART
 
 
 
@@ -122,7 +122,7 @@ But when those features finally started working together, it was VERY satisfying
 
 
 
-BUILDING THE REST OF FOLDCHECK
+#BUILDING THE REST OF FOLDCHECK
 
 
 
@@ -149,7 +149,7 @@ I found it really interesting learning about things like pLDDT and PAE, especial
 
 
 
-WHAT I ENJOYED
+#WHAT I ENJOYED
 
 
 
@@ -172,7 +172,7 @@ I also enjoyed learning things that I wouldn't normally cover in school yet, par
 
 
 
-WHAT I LEARNED
+#WHAT I LEARNED
 
 
 
@@ -211,7 +211,7 @@ These resources helped me with the scientific information and molecular visualis
 
 
 
-IMPORTANT NOTE
+#IMPORTANT NOTE
 
 
 
@@ -229,7 +229,7 @@ FoldCheck is an independent student project and isn't officially affiliated with
 
 
 
-FINAL THOUGHTS
+#FINAL THOUGHTS
 
 
 
