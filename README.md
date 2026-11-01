@@ -1,250 +1,231 @@
-# FoldCheck
+FOLDCHECK
 
-**Explore protein structures. Investigate predictions. Understand uncertainty.**
+Proteins are some of the most important molecules in our bodies, responsible for multiple processes that keep us alive. Their shapes play a huge role in how they function, and thanks to AI systems like AlphaFold, we can now predict what these complicated 3D structures might look like. But what if those predictions aren't completely accurate? How would we even know which parts to trust?
 
-FoldCheck is an interactive protein-structure exploration project designed to make complex molecular structures easier to visualise and understand.
 
-Its broader goal is to help users investigate AI-predicted protein structures critically, rather than assuming that every part of a prediction is equally reliable.
 
-**Live Demo:** Coming soon — a permanent public link will be added after deployment.
+Proteins are made from amino-acid chains that fold into three-dimensional structures. Their shapes and interactions are important for biological functions such as chemical reactions, transport, signalling and structural support. Understanding protein structures can help scientists investigate how proteins function and how structural changes might affect them.
 
----
 
-## 1. Why I Created FoldCheck
 
-I've always been interested in biology, chemistry and how artificial intelligence can help scientists understand complex problems.
+Hi! My name is Yousef, and I created FoldCheck for Hack Club Stardance! FoldCheck is a web application that allows you to explore protein structures in 3D, investigate individual residues and atoms, and examine how reliable AI-predicted protein structures actually are.
 
-When I learned about AlphaFold and its ability to predict the three-dimensional structures of proteins, I was fascinated by the possibilities.
 
-However, I realised that seeing a detailed 3D protein model doesn't necessarily tell someone how reliable the prediction is.
 
-That led me to an important question:
+I've always been interested in biology, chemistry and AI, so I wanted to combine all three into one project. When I first learned about AlphaFold, I thought it was incredible that AI could predict something as complicated as a protein's structure. However, I also realised that just because a prediction looks convincing, it doesn't necessarily mean every part of it is correct.
 
-**How can we investigate a protein prediction instead of simply accepting what it shows?**
 
-I created FoldCheck to explore that question.
 
-My vision is to develop a tool that combines interactive molecular visualisation, scientific information and confidence analysis in a single accessible environment.
+That's where FoldCheck comes in!
 
-I also wanted to make protein science more approachable for students and people who may not have experience using specialised molecular-visualisation software.
 
----
 
-## 2. What Is FoldCheck?
+LIVE WEBSITE
 
-FoldCheck is a React-based web application focused on exploring protein structures.
+https://fold-check-seven.vercel.app
 
-The project brings together an interactive molecular viewer and a user interface designed to help people examine proteins, select individual residues and understand the scientific context behind predicted structures.
+You can open FoldCheck directly in your browser without installing anything!
 
-Rather than developing a new protein-folding AI model, FoldCheck focuses on **visualising and investigating existing protein structures and predictions**.
 
-Its long-term purpose is to help users move from simply viewing a protein to asking questions about its structural reliability.
 
----
+WHAT CAN FOLDCHECK DO
 
-## 3. Current Features
 
-### Interactive 3D Protein Viewer
 
-FoldCheck integrates Mol*, a molecular visualisation library used for exploring three-dimensional molecular structures.
+Interactive 3D protein viewer
 
-The viewer allows users to inspect proteins in 3D, rotate structures and zoom into specific regions.
 
-During development, I used crambin (PDB ID: 1CRN) as an example experimental structure and explored an AlphaFold prediction of human p53 (UniProt: P04637).
 
-### Residue Selection and Inspection
+One of the biggest parts of FoldCheck is its interactive molecular viewer, which I built using Mol*, a molecular visualisation library.
 
-FoldCheck connects interactions inside the molecular viewer to the React interface.
 
-Selecting a residue can display information about the selection in a separate details panel, providing a foundation for more advanced residue-level analysis.
 
-### Scientific Introduction
+You can rotate proteins, zoom into different areas and inspect their structures in 3D.
 
-FoldCheck includes an animated introduction designed to explain how proteins relate to the wider biological world.
+During development, I used crambin (PDB ID: 1CRN) as an experimental protein structure and human p53 (UniProt ID: P04637) as an example AlphaFold prediction.
 
-It introduces concepts such as cells, amino acids, protein folding, AlphaFold predictions and scientific uncertainty.
 
-The aim is to make the project understandable even to users who are relatively new to structural biology.
 
-### Protein Exploration Interface
+Residue and atom inspection
 
-The application includes a dedicated interface for exploring proteins and navigating between the project's scientific content and interactive visualisation features.
 
-The design aims to balance scientific information with an approachable user experience.
 
----
+Proteins are made from chains of amino acids, and each amino acid within a protein chain is generally called a residue.
 
-## 4. Planned Features and Future Development
+FoldCheck allows users to interact with protein structures and inspect residues and atoms through the viewer.
 
-FoldCheck remains under development. The following capabilities represent my goals rather than features I am claiming are fully implemented.
+I connected the Mol* viewer with React so information about selections can appear elsewhere in the interface.
 
-**Residue-Level Confidence Analysis**
+Getting the interactions between the viewer and the rest of the application working was definitely one of the more challenging parts of development 😭
 
-I want to integrate AlphaFold confidence information, particularly pLDDT, so users can investigate how confidence varies across a predicted structure.
 
-**Predicted Aligned Error (PAE)**
 
-I plan to explore ways of displaying PAE information to help users understand uncertainty in the relative arrangement of protein regions.
+pLDDT confidence analysis
 
-**Structural Investigation**
 
-I want to develop tools that help users identify regions worth investigating further, including potentially uncertain or unusual structural features.
 
-**Comparison With Experimental Structures**
+FoldCheck includes pLDDT confidence analysis, which helps users investigate how confident AlphaFold is about different regions of a predicted protein structure.
 
-A future goal is to allow users to compare predicted protein structures with experimentally determined structures when suitable reference data is available.
+pLDDT stands for predicted Local Distance Difference Test and uses scores from 0 to 100.
 
-**Accessible Scientific Explanations**
+Generally, scores above 90 indicate very high confidence, 70–90 indicate confidence, 50–70 indicate low confidence, and below 50 indicate very low confidence.
 
-I want to provide explanations of confidence scores, structural features and scientific terminology so that FoldCheck can be useful for learning as well as exploration.
+However, even a very high score doesn't prove that a structure is experimentally correct!
 
-**Integrated Investigation Workspace**
 
-My longer-term vision is to connect the molecular viewer, residue selections, confidence information and other scientific evidence into one interactive environment.
 
----
+PAE analysis
 
-## 5. The Science Behind FoldCheck
 
-### What Are Proteins?
 
-Proteins are biological molecules made from chains of amino acids.
+FoldCheck also includes PAE heatmaps.
 
-Their three-dimensional structures are important because molecular shape and interactions contribute to biological function.
+PAE stands for Predicted Aligned Error, and it helps estimate uncertainty in the relative positions of different residues or regions.
 
-Understanding protein structures can help researchers investigate biological processes, molecular interactions and disease-related mechanisms.
+For example, AlphaFold might be confident about the individual shapes of two regions, but less confident about their positions relative to each other.
 
-### What Is AlphaFold?
+PAE helps investigate these differences.
 
-AlphaFold is an artificial intelligence system developed to predict protein structures from amino-acid sequences.
 
-Its predictions have contributed significantly to structural biology by making predicted protein structures available for a large number of sequences.
 
-However, a predicted structure should not automatically be treated as experimentally confirmed.
+Structural geometry
 
-### What Is pLDDT?
 
-The predicted Local Distance Difference Test, or pLDDT, is a measure of confidence in the local structure predicted by AlphaFold.
 
-It is typically represented on a scale from 0 to 100.
+I also worked on structural geometry investigation, allowing users to examine different aspects of protein structures beyond just their overall appearance.
 
-Higher scores generally indicate greater confidence in the predicted local structure, while lower scores suggest greater uncertainty.
+The goal is to make it easier to investigate the structure itself instead of simply rotating a 3D model.
 
-Importantly, pLDDT is a prediction-confidence measure, not direct experimental proof that a structure is correct.
 
-### What Is PAE?
 
-Predicted Aligned Error, or PAE, estimates uncertainty in the relative positions of residues within a predicted structure.
+Functional regions
 
-It can help researchers investigate whether the relative arrangement of different protein regions is confidently predicted.
 
-### Why Does Structural Confidence Matter?
 
-Protein predictions can contain regions with different levels of confidence.
+FoldCheck includes functional region exploration, allowing users to interact with highlighted regions of a protein and investigate them.
 
-A visually convincing model does not necessarily mean that every region has the same reliability.
+This helps connect the actual structure with biological information about different parts of the protein.
 
-FoldCheck's central motivation is to make this distinction easier to investigate and understand.
 
----
 
-## 6. Technologies Used
+Experimental structure comparison
 
-FoldCheck has been developed using:
 
-- **React** — for building the interactive user interface.
-- **JavaScript** — for application behaviour and interactions.
-- **Vite** — for frontend development and build tooling.
-- **Mol*** — for three-dimensional molecular visualisation.
-- **HTML and CSS** — for layout, styling and visual presentation.
 
-The project also explores scientific concepts and publicly available protein-structure resources.
+Another feature is experimental structure comparison.
 
----
+This allows users to investigate predicted structures alongside experimentally determined structures, including highlighting linked residues.
 
-## 7. Development Journey
+I wanted FoldCheck to provide more than just confidence scores, since comparing predictions with experimental evidence is another important way of investigating protein structures.
 
-FoldCheck has progressed through several stages.
 
-**Stage 1 — Initial Concept**
 
-I began by exploring how to make protein-structure predictions more understandable and interactive.
+Scientific introduction
 
-**Stage 2 — Interface Design**
 
-I developed the initial React interface, visual styling and scientific presentation.
 
-**Stage 3 — Scientific Introduction**
+I also created an animated scientific introduction explaining proteins, amino acids, folding, AlphaFold and uncertainty.
 
-I worked on an animated introduction explaining proteins, folding and AI predictions.
+I wanted people who aren't familiar with structural biology to understand what FoldCheck is actually investigating.
 
-**Stage 4 — Molecular Visualisation**
 
-I integrated Mol* and began displaying real protein structures inside the application.
 
-**Stage 5 — Interactive Residue Selection**
+DEVELOPMENT
 
-I connected residue selection in the 3D viewer with information displayed elsewhere in the interface.
 
-**Next Stage — Confidence Analysis**
 
-My next major objective is to integrate confidence data and develop more advanced tools for investigating predicted structures.
+I built FoldCheck using React, JavaScript, Vite, HTML and CSS, with Mol* handling the molecular visualisation.
 
----
+I also used scientific resources and data from UniProt, the AlphaFold Protein Structure Database and the Protein Data Bank.
 
-## 8. Current Limitations
+I started by developing the interface and scientific introduction, before moving on to integrating the actual 3D protein viewer.
 
-FoldCheck is an ongoing student-developed project, not a completed scientific validation platform.
+One of the biggest challenges was connecting Mol* interactions with React, especially getting residue selection, highlighting and camera behaviour working together without breaking other features.
 
-Although the project provides interactive protein visualisation and an initial foundation for residue inspection, several advanced analysis features remain in development.
+After getting the viewer working, I continued developing confidence analysis, PAE visualisation, structural investigation tools and experimental comparisons.
 
-FoldCheck does not currently guarantee the correctness of a protein structure, independently verify AlphaFold predictions or replace experimental structural analysis.
+There were definitely moments when fixing one thing seemed to break something else (which was REALLY fun 😭), but eventually I managed to get the project built and deployed!
+
+The science behind FoldCheck
+
+
+
+These resources were useful throughout development:
+
+
+
+
+
+AlphaFold Protein Structure Database
+
+
+
+RCSB Protein Data Bank
+
+
+
+UniProt
+
+
+
+Mol* Molecular Visualisation
+
+
+
+
+
+WHAT IS ALPHAFOLD
+
+AlphaFold is an AI system that predicts protein structures from amino-acid sequences.
+
+It has made predicted structures available for enormous numbers of proteins, but predictions aren't automatically equivalent to experimentally determined structures.
+
+That's why investigating confidence and comparing different forms of evidence is important.
+
+What's the difference between pLDDT and PAE?
+
+pLDDT measures confidence in the predicted local structure, while PAE estimates uncertainty in the relative positioning of residues.
+
+A protein can have regions with high local confidence while still having uncertainty about how those regions are arranged relative to each other.
+
+Both measures are useful, but neither independently proves that a prediction is correct.
+
+
+
+IMPORTANT NOTE
+
+
+
+FoldCheck is a completed Stardance project, but that doesn't mean it can scientifically prove whether a protein prediction is correct.
+
+Its purpose is to help users investigate protein structures, confidence scores and scientific evidence.
 
 It should not be used as the sole basis for scientific, clinical or medical decisions.
 
----
+Scientific resources
 
-## 9. Live Demo
 
-A permanent public demonstration link will be added once FoldCheck has been deployed.
 
-The live demo will allow visitors to explore the application directly through their browsers without installing development software.
 
----
 
-## 10. Scientific Resources and Acknowledgements
+FoldCheck is an independent student project and isn't officially affiliated with organisations.
 
-The following resources have been valuable for understanding the scientific concepts and technologies related to FoldCheck:
+Copyright and usage
 
-- [AlphaFold Protein Structure Database](https://alphafold.ebi.ac.uk/)
-- [RCSB Protein Data Bank](https://www.rcsb.org/)
-- [UniProt](https://www.uniprot.org/)
-- [Mol* Molecular Visualisation](https://molstar.org/)
+© 2026 Yousef Khanfar. All rights reserved.
 
-FoldCheck is an independent student project and is not affiliated with or officially endorsed by these organisations.
+FoldCheck is my student-developed project. The source code is publicly available for viewing and review, while third-party libraries and resources remain subject to their respective licences.
 
----
 
-## 11. Copyright and Usage
 
-**© 2026 Yousef Khanfar. All rights reserved.**
+FINAL THOUGHTS
 
-FoldCheck is an original student-developed project.
+I wanted FoldCheck to be more than just a website that displays protein structures. I wanted to create something that helps people actually investigate what they're looking at and understand why confidence matters. I'm also planning on introducing FoldCheck to my school as a possible learning resource, especially for students interested in biology and chemistry!
 
-The source code is publicly accessible for project demonstration, inspection and review.
+It's been a pretty challenging project, especially working with molecular visualisation and scientific data, but I've learned alot from building it!
 
-Unless otherwise permitted by an applicable licence or law, no permission is granted to copy, modify, redistribute or republish my original source code without prior authorisation.
 
-Third-party libraries, scientific resources and other external materials remain subject to their respective licences and terms.
 
----
 
-## 12. About the Creator
 
-FoldCheck was developed as part of my participation in **Hack Club Stardance**.
-
-The project combines my interests in biology, chemistry, artificial intelligence, programming and interactive design.
-
-I hope to continue improving FoldCheck as I learn more about structural biology and software development.
-
-**My ultimate goal is simple: make it easier to question, explore and understand protein predictions — not just look at them.**
+Thanks for checking out FoldCheck!!!
