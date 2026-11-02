@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Viewer } from "molstar/lib/apps/viewer/app";
 import { lociLabel } from "molstar/lib/mol-theme/label";
@@ -11,6 +10,7 @@ import "molstar/build/viewer/molstar.css";
 import { Color } from "molstar/lib/mol-util/color";
 import { ParamDefinition as PD } from "molstar/lib/mol-util/param-definition";
 
+// PAE colours for the selected residue
 const paeThemeParams = {
   referenceResidue: PD.Numeric(1, { min: 1, max: 10000, step: 1 })
 };
@@ -49,15 +49,15 @@ function ProteinViewer({
   proteinId = "1CRN",
   onResidueSelect,
   onProteinConfidence,
-   onSequenceLoaded,
+  onSequenceLoaded,
   onGeometryLoaded,
   searchRequest,
   onSearchResult,
   resetViewRequest,
   selectedRegion,
-linkedResidue,
-paeMatrix,
-paeReferenceResidue
+  linkedResidue,
+  paeMatrix,
+  paeReferenceResidue
 }) {
     const onResidueSelectRef = useRef(onResidueSelect);
     onResidueSelectRef.current = onResidueSelect;
@@ -68,6 +68,7 @@ paeReferenceResidue
     const atomOverlayRef = useRef(null);
     const regionOverlayRef = useRef(null);
 
+    // Load the 3D model
     useEffect(() => {
       let cancelled = false;
       let viewer = null;
@@ -115,6 +116,7 @@ paeReferenceResidue
           if (cancelled) return;
           setViewerReady((n) => n + 1);
 
+// Get the sequence and backbone positions
 const loadedStructure =
   viewer.plugin.managers.structure.hierarchy.current.structures[0]
     ?.cell?.obj?.data;
@@ -152,6 +154,7 @@ if (loadedStructure) {
           code,
           chain,
           atoms: [],
+          plddt: null,
 backbone: {}
         };
 
@@ -160,6 +163,12 @@ backbone: {}
       }
 
 const residue = residueMap.get(key);
+if (source === "alphafold" && residue.plddt === null) {
+  const score = StructureProperties.atom.B_iso_or_equiv(location);
+  if (Number.isFinite(score) && score >= 0 && score <= 100) {
+    residue.plddt = score;
+  }
+}
 
 if (!residue.atoms.includes(atomName)) {
   residue.atoms.push(atomName);
@@ -177,6 +186,7 @@ if (["N", "CA", "C"].includes(atomName)) {
   onSequenceLoaded?.(residues);
 }
 
+// Get AlphaFold confidence scores
 if (source === "alphafold") {
   const structures = viewer.plugin.managers.structure.hierarchy.current.structures;
   const structure = structures[0]?.cell?.obj?.data;
@@ -224,6 +234,7 @@ if (source === "alphafold") {
   }
 }
 
+// Handle clicks on the model
 clickSubscription = viewer.subscribe(
   viewer.plugin.behaviors.interaction.click,
   ({ current }) => {
@@ -321,6 +332,7 @@ onResidueSelectRef.current?.({
       };
     }, [source, proteinId]);
 
+// Search and zoom to an atom or residue
 useEffect(() => {
   if (!searchRequest) return;
 
@@ -538,6 +550,7 @@ viewer.plugin.managers.camera.focusLoci(loci, {
       : `Found ${match.code} ${match.number}`
   });
 }, [searchRequest, source]);
+// Highlight a selected region
 useEffect(() => {
   if (!selectedRegion) return;
 
@@ -612,6 +625,7 @@ plugin.managers.interactivity.lociSelects.select({ loci });
   };
 }, [selectedRegion, proteinId]);
 
+// Update PAE colours
 useEffect(() => {
   const viewer = molstarRef.current;
   if (!viewer || !paeMatrix?.length || !paeReferenceResidue) return;

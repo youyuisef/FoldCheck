@@ -1,10 +1,10 @@
 
 
 import { useEffect, useRef, useState } from "react";
-import "./App.css";
+import "./FoldStyle.css";
 import ProteinViewer from "./ProteinViewer";
-import aminoAcids from "./aminoAcids";
-import atomChemistry from "./atomChemistry";
+import aminoAcids from "./AmazingAminos";
+import atomChemistry from "./BomboclatAtoms";
 import RegionDetails from "./RegionDetails";
 import PAEHeatmap from "./PAEHeatmap";
 
@@ -31,6 +31,8 @@ const AMINO_ACID_SUGGESTIONS = [
   ["VAL", "Valine"]
 ];
 
+// Match residues by sequence before comparing their 3D coordinates.
+// PDB chains can be shorter than the complete AlphaFold sequence.
 function alignResidueSequences(predicted, experimental) {
   const n = predicted.length;
   const m = experimental.length;
@@ -140,6 +142,8 @@ function testRMSDCalculation() {
   );
 }
 
+// RMSD needs an optimal rotation and translation first. Otherwise the
+// different orientations of the viewers would distort the comparison.
 function calculateAlignedRMSD(pairs) {
   if (pairs.length < 3) return null;
 
@@ -300,7 +304,6 @@ function FoldCheckNav({ activePage, setActivePage }) {
         className="brand brandButton"
         onClick={() => setActivePage("home")}
       >
-        <div className="brandMark">F</div>
         <span>FoldCheck</span>
       </button>
 
@@ -310,6 +313,12 @@ function FoldCheckNav({ activePage, setActivePage }) {
   </button>
   <button className="navTextButton" onClick={() => setActivePage("basics")}>
     Basics
+  </button>
+  <button className="navTextButton" onClick={() => setActivePage("about")}>
+    About Me
+  </button>
+  <button className="navTextButton" onClick={() => setActivePage("sources")}>
+    Sources
   </button>
 </div>
 
@@ -339,7 +348,8 @@ const ONE_TO_THREE = {
   P: "PRO", S: "SER", T: "THR", W: "TRP", Y: "TYR", V: "VAL"
 };
 
-function App() {
+function FoldBasics() {
+  // These coordinates come from the actual loaded structures, not a sample protein.
   const [geometryResidues, setGeometryResidues] = useState([]);
   const [experimentalResidues, setExperimentalResidues] = useState([]);
   const [linkedSelection, setLinkedSelection] = useState(null);
@@ -450,9 +460,12 @@ const alignedRMSD =
     ? calculateAlignedRMSD(rmsdCoordinates)
     : null;
 
+  // Intro, navigation and glossary state stay here so the pages share one protein.
   const [showIntro, setShowIntro] = useState(true);
   const [introStage, setIntroStage] = useState(0);
   const [activePage, setActivePage] = useState("home");
+  const [basicsSearch, setBasicsSearch] = useState("");
+  const [basicsLetter, setBasicsLetter] = useState("All");
   useEffect(() => {
   window.scrollTo(0, 0);
 }, [activePage]);
@@ -1207,67 +1220,35 @@ description: [
 
   const residuePosition = Number(selectedResidue?.residueNumber);
 
-  const p53Region =
-    !Number.isInteger(residuePosition) ||
-    residuePosition < 1 ||
-    residuePosition > 393
-      ? null
-      : residuePosition <= 61
-        ? {
-            name: "N-terminal transactivation region",
-            description:
-              "This region helps p53 interact with proteins involved in regulating gene expression. Much of the N-terminal region is intrinsically disordered."
-          }
-        : residuePosition <= 93
-          ? {
-              name: "Proline-rich region",
-              description:
-                "This region contains many proline residues and contributes to interactions and regulatory functions of p53."
-            }
-          : residuePosition <= 292
-            ? {
-                name: "DNA-binding core domain",
-                description:
-                  "This folded domain is central to p53's ability to recognise DNA. Many cancer-associated TP53 mutations occur in this region."
-              }
-            : residuePosition <= 325
-              ? {
-                  name: "Linker region",
-                  description:
-                    "This region connects the DNA-binding core with the oligomerisation domain and may allow flexibility between them."
-                }
-              : residuePosition <= 356
-                ? {
-                    name: "Oligomerisation domain",
-                    description:
-                      "This region contributes to the formation of p53 tetramers, which are important for its biological activity."
-                  }
-                : {
-                    name: "C-terminal regulatory region",
-                    description:
-                      "This region participates in regulating p53 activity and contains sites of post-translational modification. It is often flexible."
-                  };
+  // No hardcoded p53 stuff here. Use whatever UniProt knows about the loaded protein.
+  const matchingResidueRegions = Number.isInteger(residuePosition)
+    ? (proteinInfo?.regions || []).filter((region) =>
+        region.type !== "Chain" &&
+        region.start != null && region.end != null &&
+        Number(region.start) <= residuePosition &&
+        Number(region.end) >= residuePosition
+      )
+    : [];
 
   const confidenceDifference =
     selectedPlddt !== null && proteinConfidence
       ? selectedPlddt - proteinConfidence.mean
       : null;
 
+  // Residue labels still need amino-acid names; detailed chemistry stays separate.
   const selectedAminoAcid = selectedResidue
     ? aminoAcids[selectedResidue.residueCode]
     : null;
 
+  // Give each part of the story time to play before moving to the next.
   useEffect(() => {
     if (!showIntro) return;
 
-    const timers = [
-      setTimeout(() => setIntroStage(1), 6500),
-      setTimeout(() => setIntroStage(2), 13500),
-      setTimeout(() => setIntroStage(3), 20500),
-      setTimeout(() => setIntroStage(4), 28000),
-      setTimeout(() => setIntroStage(5), 36000),
-      setTimeout(() => setShowIntro(false), 43000)
-    ];
+    const stageTimes = [3000, 9000, 15000, 21000, 27000, 33000];
+    const timers = stageTimes.map((time, index) =>
+      setTimeout(() => setIntroStage(index + 1), time)
+    );
+    timers.push(setTimeout(() => setShowIntro(false), 40000));
 
     return () => timers.forEach(clearTimeout);
   }, [showIntro]);
@@ -2688,72 +2669,135 @@ if (activePage === "experimental") {
 }
 
 if (activePage === "basics") {
+  // Keep these explanations separate from the live UniProt annotations below.
+  // They explain the science in general, not a claim about the loaded protein.
   const topics = [
-    ["Amino acids", "Proteins are built from amino acids linked by peptide bonds. Side chains determine many of their chemical properties."],
-    ["Primary structure", "The amino-acid sequence, read from the N-terminus to the C-terminus."],
-    ["Secondary structure", "Alpha helices and beta sheets are local backbone patterns stabilised by hydrogen bonds."],
-    ["Tertiary structure", "The 3D arrangement of a polypeptide, influenced by hydrophobic packing, ionic interactions, hydrogen bonds and sometimes disulfide bonds."],
-    ["Quaternary structure", "The assembly of multiple protein chains into a complex. Not every protein forms one."],
-    ["Domains", "A domain is a region of a protein that can form a distinct structural or functional unit."],
-    ["Organelles and localisation", "A protein's cellular location helps explain its role. Some proteins work in the nucleus, others in mitochondria, the endoplasmic reticulum, membranes or cytoplasm. Localisation can change with conditions."],
-    ["AlphaFold model", "An AlphaFold structure is a computational prediction, not an experimental measurement or a complete simulation of a protein inside a cell."],
-    ["pLDDT", "Predicted local distance difference test estimates local model confidence. Above 90: very high; 70–90: confident; 50–70: low; below 50: very low."],
-    ["PAE", "Predicted aligned error describes uncertainty in relative positions of residues or domains, complementing pLDDT."],
-    ["Experimental structures", "PDB entries can be determined using X-ray crystallography, cryo-electron microscopy or NMR. They may cover only part of a protein."],
-    ["Mutations", "A missense variant substitutes one amino acid. Effects depend on the position, molecular environment and biological context; sequence identity alone cannot establish pathogenicity."]
+    ["Amino acids", "Proteins are built from 20 commonly used amino acids. Each has an amino group, carboxyl group and a side chain that affects its chemical behaviour."],
+    ["Alpha helices", "A common secondary structure where the backbone coils into a helix. Hydrogen bonds between backbone groups help stabilise it."],
+    ["AlphaFold model", "AlphaFold predicts a possible 3D protein structure using AI. A prediction is not direct experimental proof, and proteins can move or change shape."],
+    ["Beta sheets", "A secondary structure formed when extended stretches of the protein backbone align and form hydrogen bonds."],
+    ["Confidence scores", "A confidence score indicates how reliable a model is expected to be in a particular respect. It is not the probability that the whole protein is correct."],
+    ["Disordered regions", "Some regions do not settle into one stable 3D shape. Low model confidence can reflect genuine flexibility or disorder, not necessarily a modelling failure."],
+    ["Disulfide bonds", "Covalent links between cysteine side chains that can help stabilise a protein, especially outside cells."],
+    ["Domains", "A domain is a section of a protein that can fold into a distinct structural unit and often carries a particular function."],
+    ["Enzymes", "Proteins that speed up chemical reactions by lowering activation energy. Their active sites bind substrates and help reactions happen."],
+    ["Experimental structures", "Scientists determine structures using methods such as X-ray crystallography, cryo-electron microscopy and NMR. Experimental models also have limitations and may only show part of a protein."],
+    ["Folding", "The process by which an amino-acid chain adopts its three-dimensional shape. The sequence, environment and sometimes helper proteins influence folding."],
+    ["Hydrogen bonds", "Attractions involving hydrogen and electronegative atoms. Many hydrogen bonds help stabilise alpha helices, beta sheets and other protein interactions."],
+    ["Hydrophobic effect", "Nonpolar side chains often pack away from water, helping many soluble proteins form a stable interior."],
+    ["Ionic interactions", "Attractions between oppositely charged groups, such as certain amino-acid side chains. Their strength depends on the surrounding environment."],
+    ["Ligands", "Molecules or ions that bind to a protein. Some help proteins work, while others inhibit or change their activity."],
+    ["Membrane proteins", "Proteins embedded in or associated with cell membranes. They can transport substances, detect signals or connect cells."],
+    ["Mutations", "Changes in DNA can alter a protein sequence or how much protein is produced. Effects range from harmless to important, depending on the change and context."],
+    ["Organelles and localisation", "Where a protein works matters. Proteins may function in the nucleus, cytoplasm, mitochondria, membranes or other compartments, and some move between locations."],
+    ["PAE", "Predicted aligned error estimates uncertainty in the relative positions of residues or domains. It helps assess whether the arrangement of two regions is reliable."],
+    ["Peptide bonds", "Covalent bonds linking amino acids into a polypeptide chain. They form between the carboxyl group of one amino acid and the amino group of another."],
+    ["pLDDT", "AlphaFold’s local confidence score, from 0 to 100. Above 90 is very high confidence; 70–90 confident; 50–70 low; and below 50 very low."],
+    ["Primary structure", "The order of amino acids in a protein, usually written from the N-terminus to the C-terminus. This sequence influences how the protein folds."],
+    ["Protein function", "A protein’s job may include catalysing reactions, carrying molecules, providing structure, sending signals or regulating genes. Structure helps, but does not alone prove function."],
+    ["Quaternary structure", "The arrangement of multiple protein chains into one functional complex. Many proteins work as single chains and do not have quaternary structure."],
+    ["Residues", "An amino acid is called a residue once incorporated into a protein chain. Residue numbers help locate positions in sequences and structures."],
+    ["Secondary structure", "Local patterns of the protein backbone, especially alpha helices and beta sheets, stabilised largely by hydrogen bonds."],
+    ["Sequence alignment", "A method of matching amino-acid positions between sequences or structures. It helps compare related proteins and identify substitutions or missing regions."],
+    ["Side chains", "The variable parts of amino acids. Their size, charge and polarity affect interactions and protein behaviour."],
+    ["Tertiary structure", "The overall three-dimensional arrangement of one protein chain, held together by many interactions including hydrophobic packing, hydrogen bonds and sometimes disulfide bonds."],
+    ["UniProt", "A database of protein sequences and biological annotations. Its descriptions and region information are distinct from AlphaFold’s predicted coordinates."]
   ];
+
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const visibleTopics = topics.filter(([title, description]) => {
+    const matchesSearch = `${title} ${description}`.toLowerCase()
+      .includes(basicsSearch.trim().toLowerCase());
+    const matchesLetter = basicsLetter === "All" ||
+      title.toUpperCase().startsWith(basicsLetter);
+    return matchesSearch && matchesLetter;
+  });
+
   return (
-    <>
+    <div className="app">
       <FoldCheckNav activePage={activePage} setActivePage={setActivePage} />
-      <main className="workspacePage" style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 24px" }}>
-        <p className="sectionLabel">LEARN THE SCIENCE</p>
+      <main className="workspacePage" style={{ maxWidth: 1050, margin: "0 auto", padding: "40px 24px" }}>
         <h1>Protein Basics</h1>
         <p>Explore protein architecture, cellular localisation and the evidence behind structure predictions.</p>
-        <section className="foldcheckLearningGrid">
-          {topics.map(([title, description]) => (
-            <article className="foldcheckLearningCard" key={title}>
-              <h2>{title}</h2>
-              <p>{description}</p>
-            </article>
+
+        <div style={{ margin: "30px 0 20px" }}>
+          <label htmlFor="basicsSearch" style={{ display: "block", marginBottom: 10 }}>
+            Search the glossary
+          </label>
+          <input
+            id="basicsSearch"
+            type="search"
+            value={basicsSearch}
+            onChange={(event) => setBasicsSearch(event.target.value)}
+            placeholder="Search a term or explanation..."
+            style={{ width: "100%", padding: "13px 16px", background: "#111d26", color: "#fff", border: "1px solid #29414d", borderRadius: 8 }}
+          />
+        </div>
+
+        <div aria-label="Filter glossary by letter" style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 30 }}>
+          {["All", ...letters].map((letter) => (
+            <button
+              key={letter}
+              type="button"
+              onClick={() => setBasicsLetter(letter)}
+              aria-pressed={basicsLetter === letter}
+              disabled={letter !== "All" && !topics.some(([title]) => title.toUpperCase().startsWith(letter))}
+              style={{ padding: "8px 10px", background: basicsLetter === letter ? "#28535a" : "transparent", color: "#d6e7ec", border: "1px solid #29414d", borderRadius: 5, cursor: "pointer" }}
+            >
+              {letter}
+            </button>
           ))}
+        </div>
+
+        <section aria-label="Protein science glossary">
+          {visibleTopics.length ? visibleTopics.map(([title, description]) => (
+            <article key={title} style={{ padding: "18px 0", borderBottom: "1px solid #29414d" }}>
+              <h2 style={{ margin: "0 0 8px", fontSize: "1.2rem" }}>{title}</h2>
+              <p style={{ margin: 0, lineHeight: 1.75 }}>{description}</p>
+            </article>
+          )) : <p>No matching terms. Try another search or letter.</p>}
         </section>
-        <section className="foldcheckDetailPanel">
-          <p className="sectionLabel">CURRENTLY LOADED PROTEIN</p>
-          <h2>{proteinInfo?.name || activeProteinId}</h2>
-          <p><strong>Organism:</strong> {proteinInfo?.organism || "Loading UniProt information"}</p>
-          <p><strong>Gene:</strong> {proteinInfo?.gene || "Not specified"}</p>
-          <p><strong>Length:</strong> {proteinInfo?.length ? `${proteinInfo.length} amino acids` : "Not available"}</p>
-          <h3>Where is it found in the cell?</h3>
-          {proteinInfo?.subcellularLocations?.length ? (
-            <div className="foldcheckTagList">
-              {[...new Set(proteinInfo.subcellularLocations.map((item) => item.name))].map((name) => (
-                <span className="foldcheckTag" key={name}>{name}</span>
-              ))}
-            </div>
-          ) : (
-            <p>UniProt has no subcellular-location annotation available for this entry, or the annotation is still loading.</p>
-          )}
-          <h3>Annotated domains and regions</h3>
-          {proteinInfo?.regions?.length ? (
-            <div className="foldcheckRegionList">
-              {proteinInfo.regions.slice(0, 18).map((region, index) => (
-                <button key={`${region.name}-${index}`} type="button" onClick={() => {
-                  setSelectedRegion(region);
-                  setActivePage("workspace");
-                }}>
-                  <strong>{region.name}</strong>
-                  <span>{region.start}–{region.end} · {region.type}</span>
-                </button>
-              ))}
-            </div>
-          ) : <p>No region annotations available for this entry.</p>}
-          <h3>Function</h3>
-          <p>{proteinInfo?.function || "Function annotation unavailable for this entry."}</p>
-          <button className="navButton" onClick={() => setActivePage("workspace")}>Inspect the actual 3D model</button>
-          <p className="foldcheckSourceNote">Protein descriptions, localisation and regions are retrieved from UniProt. The 3D model is obtained separately from AlphaFold.</p>
-        </section>
+
       </main>
-    </>
+    </div>
+  );
+}
+
+if (activePage === "sources") {
+  return (
+    <div className="app">
+      <FoldCheckNav activePage={activePage} setActivePage={setActivePage} />
+      <main className="sourcesPage">
+        <button className="aboutBack" onClick={() => setActivePage("home")}>← Back to home</button>
+        <h1>Sources</h1>
+        <p>Here's where FoldCheck gets its protein information and the tools it uses.</p>
+        <div className="sourcesLinks">
+          <a href="https://www.uniprot.org/" target="_blank" rel="noopener noreferrer">UniProt ↗</a>
+          <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="noopener noreferrer">AlphaFold Protein Structure Database ↗</a>
+          <a href="https://www.rcsb.org/" target="_blank" rel="noopener noreferrer">RCSB Protein Data Bank ↗</a>
+          <a href="https://molstar.org/" target="_blank" rel="noopener noreferrer">Mol* 3D Viewer ↗</a>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+if (activePage === "about") {
+  return (
+    <div className="app">
+      <FoldCheckNav activePage={activePage} setActivePage={setActivePage} />
+      <main className="aboutPage">
+        <button className="aboutBack" onClick={() => setActivePage("home")}>← Back to home</button>
+        <h1>About Me</h1>
+        <div className="aboutStory">
+          <p>Hey! My name is Yousef, and I'm a young student from Australia. I love science, especially biology and chemistry, and recently I've also started getting into coding and circuitry. I created FoldCheck to get an ESP32, a pair of Nothing headphones, and maybe even a 3D printer from Hack Club. Okay, I'm kidding. Those are just some of the perks.</p>
+          <p>It all started on a "moony" evening (like a sunny afternoon, but with the moon). I was studying proteins when I suddenly wondered: How do we actually know what proteins look like? So, I did some research and came across AlphaFold, an AI that can predict the 3D structures of proteins. I thought that was crazy! AI could predict how a protein folds? But then I had another question. How does it know if it's correct?</p>
+          <p>I found out that AlphaFold gives confidence scores for its predictions, but I wanted to understand what those scores meant and how much we could actually trust them. So, I decided to (attempt to) help the world out. That's how FoldCheck started. I wanted to make a website where people could look at proteins, explore their structures, and understand how confident AlphaFold is in its predictions.</p>
+          <p>I'm still learning, and there's definitely a lot more I want to add to FoldCheck. One of my biggest goals is to eventually bring FoldCheck into schools, so students can explore proteins themselves instead of just looking at pictures in a textbook. And yeah, hopefully I'll get that 3D printer too.</p>
+        </div>
+        <button className="primaryButton" onClick={() => setActivePage("home")}>Explore FoldCheck →</button>
+      </main>
+    </div>
   );
 }
 
@@ -2824,7 +2868,7 @@ if (activePage === "workspace") {
   </p>
 
   <h3>Biological function</h3>
-  <p>
+  <div className="functionDescription">
     {proteinInfoLoading ? (
   <p>Loading protein information...</p>
 ) : proteinInfo?.function ? (
@@ -2847,8 +2891,8 @@ if (activePage === "workspace") {
   {proteinInfo.function.length > 280 && (
     <ul className="biologicalFunctionFull">
   {proteinInfo.function
-    .split(/(?<=[.!?])\s+/)
-    .filter((sentence) => sentence.trim().length > 0)
+    .split(/(?<=[.!?])\s+(?=[A-Z])/)
+    .filter((sentence) => sentence.trim().length > 12)
     .map((sentence, index) => (
       <li key={index}>{sentence.trim()}</li>
     ))}
@@ -2858,12 +2902,11 @@ if (activePage === "workspace") {
 ) : (
   <p>No functional description available from UniProt.</p>
 )}
-  </p>
+  </div>
 
   <h3 className="functionalRegionsHeading">
   Annotated functional regions
 </h3>
-<p className="foldcheckRegionHint">Click any residue-range button below to highlight that region in the 3D protein viewer.</p>
 
 <details className="functionalRegionsDetails">
   <summary className="functionalRegionsToggle">
@@ -2901,7 +2944,6 @@ if (activePage === "workspace") {
 }}
   title="Explore this region in 3D"
 >
-  <span className="functionalRegionAction">CLICK TO HIGHLIGHT</span>
   Residues {region.start ?? "?"}–{region.end ?? "?"}
   <span aria-hidden="true"> ↗</span>
 </button>
@@ -2930,9 +2972,7 @@ if (activePage === "workspace") {
                   <h2>Explore the protein</h2>
                 </div>
 
-                <button className="viewerHelp">
-                  ? How do I use this?
-                </button>
+
               </div>
 
               <div className="structureSearch">
@@ -3191,55 +3231,42 @@ selectedRegion={selectedRegion}
                     </div>
 
                     <div className="proteinConfidenceInterpretation">
-                      <h4>What does this tell us about this protein?</h4>
-
+                      <h4>What does this tell us about {proteinInfo?.name || activeProteinId}?</h4>
                       <p>
-                        The loaded AlphaFold model contains a
-                        mixture of confidently predicted and
-                        uncertain regions. Its mean pLDDT is{" "}
-                        <strong>
-                          {proteinConfidence.mean.toFixed(1)}
-                        </strong>
-                        , but{" "}
-                        <strong>
-                          {(
-                            (proteinConfidence.veryLow /
-                              proteinConfidence.residueCount) *
-                            100
-                          ).toFixed(1)}
-                          %
-                        </strong>{" "}
-                        of its residues have very low confidence,
-                        while{" "}
-                        <strong>
-                          {(
-                            (proteinConfidence.veryHigh /
-                              proteinConfidence.residueCount) *
-                            100
-                          ).toFixed(1)}
-                          %
-                        </strong>{" "}
-                        have very high confidence.
+                        In this model of {proteinInfo?.name || activeProteinId}, AlphaFold scores
+                        {proteinConfidence.residueCount} residues and gives a mean pLDDT of
+                        {" "}{proteinConfidence.mean.toFixed(1)}/100. Of those,
+                        {" "}{proteinConfidence.veryHigh} residues
+                        ({((proteinConfidence.veryHigh / proteinConfidence.residueCount) * 100).toFixed(1)}%)
+                        are at least 90, while {proteinConfidence.veryLow}
+                        ({((proteinConfidence.veryLow / proteinConfidence.residueCount) * 100).toFixed(1)}%)
+                        are below 50. So the mean alone hides substantial differences between
+                        regions of this particular model.
                       </p>
-
-                      <h4>Why might confidence vary?</h4>
-
-                     <p>
-  Confidence can vary between regions because of differences
-  in structural constraints, flexibility, or limitations in
-  the prediction. Low pLDDT may be consistent with intrinsic
-  disorder, but it does not establish the cause of uncertainty.
-</p>
-
-                      <h4>Why does it matter?</h4>
-
+                      <h4>Where should you be cautious?</h4>
                       <p>
-                        The mean score does not represent every
-                        part of the protein equally. Its highly confident
-                        regions can be investigated with greater
-                        structural confidence, while low-confidence
-                        regions require more cautious interpretation
-                        and additional evidence.
+                        {proteinConfidence.veryLow > proteinConfidence.veryHigh
+                          ? `For ${proteinInfo?.name || activeProteinId}, very-low-confidence residues outnumber very-high-confidence ones. Large parts of this prediction may be unsuitable for precise structural claims.`
+                          : `For ${proteinInfo?.name || activeProteinId}, very-high-confidence residues outnumber very-low-confidence ones, but the ${proteinConfidence.veryLow} residues below 50 still need special care.`}
+                        {" "}Low pLDDT can be consistent with flexibility or disorder, but these
+                        numbers alone cannot prove why a region is uncertain.
+                      </p>
+                      <h4>What can you trust more in this model?</h4>
+                      <p>
+                        The {proteinConfidence.veryHigh} residues scoring at least 90 provide
+                        stronger support for local backbone geometry than the
+                        {" "}{proteinConfidence.veryLow} residues scoring below 50.
+                        That does not make the high-scoring regions experimentally verified,
+                        and it does not establish how accurately distant parts are arranged
+                        relative to one another.
+                      </p>
+                      <h4>What should you investigate next?</h4>
+                      <p>
+                        In the 3D viewer for {proteinInfo?.name || activeProteinId}, pick one
+                        blue high-confidence region and one orange low-confidence region.
+                        Select residues in each and compare their exact scores and available
+                        UniProt annotations. Then check PAE for uncertainty between regions
+                        and any available experimental structures before drawing conclusions.
                       </p>
                     </div>
                   </>
@@ -3283,7 +3310,7 @@ selectedRegion={selectedRegion}
             <aside className="evidencePanel">
               <div className="evidencePanelHeader">
                 <span>SELECTION DETAILS</span>
-                <div className="liveDot" />
+                
               </div>
 
               <div className="inspectorTabs">
@@ -3329,25 +3356,6 @@ selectedRegion={selectedRegion}
                     {selectedResidue.residueNumber} · Chain{" "}
                     {selectedResidue.chain}
                   </p>
-
-                  {activeProteinId === "P04637" && p53Region && (
-                    <div className="inspectorSection">
-                      <h4>Where is this residue in p53?</h4>
-
-                      <strong className="residueRegionName">
-                        {p53Region.name}
-                      </strong>
-
-                      <p>{p53Region.description}</p>
-
-                      <p className="inspectorNote">
-                        Functional region assignments are
-                        approximate and based on p53 sequence
-                        position, not inferred from the 3D
-                        coordinates.
-                      </p>
-                    </div>
-                  )}
 
                   <div className="inspectorSection">
                     <h4>AlphaFold prediction confidence</h4>
@@ -3399,7 +3407,7 @@ selectedRegion={selectedRegion}
                           {confidenceDifference !== null && (
                             <div className="residueConfidenceComparison">
                               <span>
-                                Compared with protein's mean confidence
+                                Compared with this protein’s mean confidence
                               </span>
 
                               <strong>
@@ -3422,26 +3430,52 @@ selectedRegion={selectedRegion}
                             </div>
                           )}
 
-                          <h4>
-                            Why might confidence be{" "}
-                            {confidenceCategory.toLowerCase()}?
-                          </h4>
-
-                          <p>{confidenceExplanation}</p>
-
-                          <h4>Why does it matter?</h4>
-                          <p>{confidenceSignificance}</p>
-
-                          <h4>
-                            What should you investigate next?
-                          </h4>
-
+                          <h4>What does this score tell us?</h4>
                           <p>
-                            Compare neighbouring residues,
-                            examine local structural features,
-                            and check available PAE or
-                            experimental evidence before drawing
-                            conclusions about this region.
+                            You're looking at {selectedAminoAcid?.name || selectedResidue.residueCode},
+                            residue {residuePosition} in {proteinInfo?.name || activeProteinId}.
+                            Its pLDDT is {selectedPlddt.toFixed(1)}/100
+                            {confidenceDifference !== null
+                              ? `, ${Math.abs(confidenceDifference).toFixed(1)} points ${confidenceDifference >= 0 ? "above" : "below"} this protein's ${proteinConfidence.mean.toFixed(1)} average.`
+                              : "."}
+                            {" "}{selectedPlddt >= 90
+                              ? "This is a very-high-confidence local prediction, so the backbone around this position is a useful starting point for structural analysis."
+                              : selectedPlddt >= 70
+                                ? "The local backbone is predicted fairly confidently, but fine structural details need more care."
+                                : selectedPlddt >= 50
+                                  ? "The local structure is uncertain, so its precise shape and contacts are not reliable evidence on their own."
+                                  : "The model has very little confidence in this local structure; its displayed coordinates could be misleading."}
+                          </p>
+
+                          <h4>What might be going on here?</h4>
+                          <p>
+                            {matchingResidueRegions.length
+                              ? `UniProt places residue ${residuePosition} inside ${matchingResidueRegions.slice(0, 2).map(r => `${r.name} (positions ${r.start}–${r.end})`).join(" and ")}. That gives this position a documented biological context in ${proteinInfo?.name || activeProteinId}, but it doesn't prove the predicted contacts or explain the confidence score.`
+                              : `UniProt doesn't list a matching annotated region at position ${residuePosition} in ${proteinInfo?.name || activeProteinId}. That doesn't mean this position has no role.`}
+                            {" "}{selectedPlddt < 70
+                              ? "Its low score could reflect a mobile or disordered stretch, or simply an uncertain prediction; pLDDT cannot distinguish these possibilities."
+                              : "The score supports a local shape, but cannot tell us whether this residue is rigid, exposed, or involved in an interaction."}
+                          </p>
+
+                          <h4>Why is this important for this protein?</h4>
+                          <p>
+                            {selectedPlddt >= 70
+                              ? `For ${proteinInfo?.name || activeProteinId}, this residue's predicted local position is more suitable for examining nearby structural features than a low-scoring residue would be.`
+                              : `For ${proteinInfo?.name || activeProteinId}, any apparent bond, pocket, or contact involving residue ${residuePosition} needs extra caution because the model is uncertain here.`}
+                            {" "}{matchingResidueRegions.length
+                              ? `Its overlap with ${matchingResidueRegions[0].name} makes this position worth investigating, although the annotation is not experimental validation of this specific AlphaFold geometry.`
+                              : "Without a matching functional annotation, its biological significance cannot be determined from the confidence score alone."}
+                          </p>
+
+                          <h4>What should you investigate next?</h4>
+                          <p>
+                            Inspect the residues directly beside {selectedResidue.residueCode} {residuePosition}
+                            in {proteinInfo?.name || activeProteinId}, then compare their pLDDT values.
+                            {confidenceDifference !== null && confidenceDifference < 0
+                              ? " See whether this lower-scoring position belongs to a longer uncertain stretch rather than being an isolated dip."
+                              : " Check whether the neighbouring positions have similarly strong predictions or whether confidence drops sharply."}
+                            {" "}Use the PAE plot to investigate how reliably this region is positioned
+                            relative to the rest of the protein, and compare experimental structures if available.
                           </p>
                         </div>
                       </>
@@ -3453,73 +3487,9 @@ selectedRegion={selectedRegion}
                     )}
                   </div>
 
-                  {selectedAminoAcid ? (
-                    <>
-                      <div className="inspectorSection">
-                        <h4>About this amino acid</h4>
-                        <p>
-                          {selectedAminoAcid.description}
-                        </p>
+                  {/* Amino-acid chemistry lives in AmazingAmino's.
+                      Residue selection and confidence analysis stay in this viewer. */}
 
-                        <div className="inspectorData">
-                          <div>
-                            <span>One-letter code</span>
-                            <strong>
-                              {selectedAminoAcid.letter}
-                            </strong>
-                          </div>
-
-                          <div>
-                            <span>Chemical class</span>
-                            <strong>
-                              {selectedAminoAcid.category}
-                            </strong>
-                          </div>
-
-                          <div>
-                            <span>Side chain</span>
-                            <strong>
-                              {selectedAminoAcid.sideChain}
-                            </strong>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="inspectorSection">
-                        <h4>Chemical composition</h4>
-
-                        <div className="inspectorData">
-                          <div>
-                            <span>Free amino acid formula</span>
-                            <strong>
-                              {selectedAminoAcid.formula}
-                            </strong>
-                          </div>
-
-                          <div>
-                            <span>Free amino acid molar mass</span>
-                            <strong>
-                              {selectedAminoAcid.mass.toFixed(2)}{" "}
-                              g/mol
-                            </strong>
-                          </div>
-                        </div>
-
-                        <p className="inspectorNote">
-                          These values describe the free amino
-                          acid. Its composition differs when
-                          incorporated into a protein chain.
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <p>
-                      Reference information is not available
-                      for this residue type.
-                    </p>
-                  )}
-
-                 
                 </div>
 )}
 
@@ -3551,15 +3521,13 @@ selectedRegion={selectedRegion}
     </p>
 
    <div className="inspectorSection">
-  <h4>
   {!selectedRegion.name.toLowerCase().includes("interaction") && (
-  <h4>
-    {selectedRegion.type === "Domain"
-      ? `What does the ${selectedRegion.name} domain do?`
-      : `What does ${selectedRegion.name} do?`}
-  </h4>
-)}
-</h4>
+    <h4>
+      {selectedRegion.type === "Domain"
+        ? `What does the ${selectedRegion.name} domain do?`
+        : `What does ${selectedRegion.name} do?`}
+    </h4>
+  )}
 
   
 
@@ -3813,198 +3781,75 @@ selectedRegion={selectedRegion}
             SKIP INTRO
           </button>
 
-          <div className="introProgress">
-            <span className={introStage >= 0 ? "active" : ""} />
-            <span className={introStage >= 1 ? "active" : ""} />
-            <span className={introStage >= 2 ? "active" : ""} />
-            <span className={introStage >= 3 ? "active" : ""} />
-            <span className={introStage >= 4 ? "active" : ""} />
-            <span className={introStage >= 5 ? "active" : ""} />
+          <div className="introProgress" aria-label="Intro progress">
+            {Array.from({ length: 7 }, (_, index) => (
+              <span key={index} className={introStage >= index ? "active" : ""} />
+            ))}
           </div>
 
+          {/* From DNA to a predicted structure: one story, without duplicating AmazingAmino’s lessons. */}
+
+          <div className="introOpening">
+            <h1>Let’s show you how proteins are made.</h1>
+          </div>
           <div className="introScene humanScene">
-            <p className="introIndex">01 / HUMAN BODY</p>
-
-            <div className="scienceVisual humanScienceVisual">
-              <img
-                src="/human-anatomy.png"
-                alt="Human body anatomy"
-                className="scienceImage humanImage"
-              />
-            </div>
-
+            
+            <div className="introStoryVisual"><img src="/human-anatomy.png" alt="Human anatomy" className="introStoryImage" /></div>
             <div className="introCopy">
-              <p className="introOverline">
-                FROM BODY TO MOLECULE
-              </p>
-
-              <h1>
-                Your body is made of trillions of cells.
-              </h1>
-
-              <p>
-                Cells form tissues and organs throughout the
-                body. Inside every cell, proteins carry out
-                many of the processes needed for life.
-              </p>
+              
+              <h1>Your body depends on proteins.</h1>
+              <p>Your body contains trillions of cells. Proteins help those cells build, transport, signal and repair. So where do proteins come from?</p>
             </div>
           </div>
 
           <div className="introScene cellScene">
-            <p className="introIndex">02 / CELL</p>
-
-            <div className="scienceVisual cellScienceVisual">
-              <img
-                src="/animal-cell.png"
-                alt="Animal cell showing major organelles"
-                className="scienceImage cellImage"
-              />
-            </div>
-
+            
+            <div className="introStoryVisual"><img src="/animal-cell.png" alt="Animal cell" className="introStoryImage" /></div>
             <div className="introCopy">
-              <p className="introOverline">
-                INSIDE A CELL
-              </p>
-
-              <h1>Cells depend on proteins.</h1>
-
-              <p>
-                Proteins perform many different jobs inside
-                and around cells. Their function is closely
-                connected to their three-dimensional structure.
-              </p>
+              
+              <h1>Cells follow instructions stored in DNA.</h1>
+              <p>Inside the nucleus, DNA stores genes. Many genes contain the instructions for making proteins.</p>
             </div>
           </div>
 
           <div className="introScene sequenceScene">
-            <p className="introIndex">03 / AMINO ACIDS</p>
-
-            <div className="scienceVisual aminoScienceVisual">
-              <img
-                src="/amino-acids.png"
-                alt="Amino acids forming a protein chain"
-                className="scienceImage aminoImage"
-              />
-            </div>
-
+            
+            <div className="introStoryVisual"><img src="/amino-acids.png" alt="Amino acids linked into a chain" className="introStoryImage" /></div>
             <div className="introCopy">
-              <p className="introOverline">
-                BUILDING A PROTEIN
-              </p>
-
-              <h1>
-                Proteins begin as chains of amino acids.
-              </h1>
-
-              <p>
-                Amino acids are joined in a specific sequence.
-                The chain can then fold into a complex
-                three-dimensional structure.
-              </p>
+              
+              <h1>A new protein starts as a chain of amino acids.</h1>
+              <p>Its amino-acid sequence is called its primary structure. Explore individual amino acids in AmazingAmino’s; here, we follow what happens to the chain.</p>
             </div>
           </div>
 
           <div className="introScene predictionScene">
-            <p className="introIndex">
-              04 / STRUCTURE PREDICTION
-            </p>
-
-            <div className="predictionVisual">
-              <img
-                src="/alphafold-prediction.png"
-                alt="Illustration of a predicted folded protein structure"
-                className="predictionImage"
-              />
-
-              <div className="predictionReadout">
-                <span className="readoutDot" />
-                PREDICTED STRUCTURE
-              </div>
-            </div>
-
+            
+            <div className="introStoryVisual"><img src="/alphafold-prediction.png" alt="AlphaFold protein structure prediction" className="introStoryImage" /></div>
             <div className="introCopy">
-              <p className="introOverline">ALPHAFOLD</p>
-
-              <h1>
-                AlphaFold predicts a protein's 3D structure.
-              </h1>
-
-              <p>
-                Starting from an amino-acid sequence, AlphaFold
-                can generate a structural model and confidence
-                information for the prediction.
-              </p>
+              
+              <h1>AlphaFold predicts a possible 3D structure.</h1>
+              <p>AlphaFold uses sequence information to predict structural coordinates. Its model is a prediction, not direct experimental evidence.</p>
             </div>
           </div>
 
           <div className="introScene uncertaintyScene">
-            <p className="introIndex">05 / UNCERTAINTY</p>
-
-            <div className="uncertaintyVisual">
-              <img
-                src="/alphafold-uncertainty.png"
-                alt="Illustration showing varying confidence across a predicted protein structure"
-                className="uncertaintyImage"
-              />
-            </div>
-
+            
+            <div className="introStoryVisual"><img src="/alphafold-uncertainty.png" alt="Different confidence levels in a predicted structure" className="introStoryImage" /></div>
             <div className="introCopy">
-              <p className="introOverline">
-                CONFIDENCE IS NOT UNIFORM
-              </p>
-
-              <h1>
-                Not every part of the prediction is equally
-                certain.
-              </h1>
-
-              <p>
-                Some regions can have lower local confidence,
-                while the relative positions of different
-                parts of the protein can also be uncertain.
-                A convincing 3D model still needs to be
-                interpreted carefully.
-              </p>
+              
+              <h1>Not every part of a prediction is equally reliable.</h1>
+              <p>pLDDT describes local confidence, while PAE helps assess uncertainty in relative positions. A convincing-looking model still needs careful interpretation.</p>
             </div>
           </div>
 
           <div className="introScene foldcheckScene">
-            <div className="foldcheckFinalVisual">
-              <div className="introFinalMark">F</div>
-
-              <div className="finalEvidence">
-                <div>
-                  <strong>pLDDT</strong>
-                  <span>Local confidence</span>
-                </div>
-
-                <div>
-                  <strong>PAE</strong>
-                  <span>Position uncertainty</span>
-                </div>
-
-                <div>
-                  <strong>PDB</strong>
-                  <span>Experimental evidence</span>
-                </div>
-
-                <div>
-                  <strong>3D</strong>
-                  <span>Structural checks</span>
-                </div>
-              </div>
+            
+            <div className="introStoryVisual"><div className="introStoryCode">FOLDCHECK</div><span className="introStoryCaption">EXPLORE · QUESTION · LEARN</span></div>
+            <div className="introCopy">
+              
+              <h1>Now explore the evidence with FoldCheck.</h1>
+              <p>Search for a protein, inspect its 3D structure, compare confidence and available experimental information, and decide which regions deserve a closer look.</p>
             </div>
-
-            <p className="introOverline">FOLDCHECK</p>
-
-            <h1>Investigate the prediction.</h1>
-
-            <p>
-              FoldCheck brings different evidence together so
-              you can explore a predicted structure, find
-              regions worth investigating, and understand why
-              they may need a closer look.
-            </p>
           </div>
         </div>
       )}
@@ -4014,48 +3859,23 @@ selectedRegion={selectedRegion}
 )}
 
       <main>
-        <section className="hero" id="top">
+        {activePage === "home" && <section className="hero newHomeHero" id="top">
           <div className="heroContent">
-            <p className="eyebrow">
-              ALPHAFOLD STRUCTURE EXPLORER
-            </p>
-
-            <h1>FoldCheck</h1>
-
-            <h2>Explore protein predictions in 3D.</h2>
-
-            <p className="heroText">
-              Search for a protein, explore its AlphaFold
-              structure, and investigate where the prediction
-              is confident — and where it might be uncertain.
-              A protein model doesn't tell you everything,
-              so FoldCheck brings multiple forms of evidence
-              together to help you investigate it.
-            </p>
-
-            <p className="heroFeatures">
-              Explore interactive 3D structures, examine
-              local confidence (pLDDT), investigate predicted
-              aligned error (PAE), inspect structural
-              geometry, and compare predictions with
-              available experimental evidence.
-            </p>
-
-            <div className="heroButtons">
-              <a className="primaryButton" href="#explore">
-                Explore a protein →
-              </a>
-
-              <button
-                className="secondaryButton"
-                onClick={replayIntro}
-              >
-                ▶ Replay Intro
-              </button>
+            <h1>Welcome to FoldCheck.</h1>
+            <p className="heroText">Proteins are complicated. Exploring them shouldn't be. Search for a protein, see its predicted 3D structure and find out what the confidence scores actually tell you.</p>
+            <div className="homeAction">
+              <span className="handNote">click here to start or scroll down!</span>
+              <svg className="handArrow" viewBox="0 0 110 65" fill="none" aria-hidden="true">
+                <path d="M5 7 C25 8 38 20 48 35 L65 58 M48 56 L65 58 L65 41" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <button className="primaryButton" onClick={() => setActivePage("search")}>Explore a protein →</button>
+              <button className="secondaryButton" onClick={replayIntro}>Replay intro ↻</button>
             </div>
-          </div>
-        </section>
 
+          </div>
+        </section>}
+
+        {(activePage === "home" || activePage === "search") && (
         <section className="exploreSection" id="explore">
           <div className="exploreLayout">
             <div className="demoColumn">
@@ -4064,11 +3884,6 @@ selectedRegion={selectedRegion}
               </p>
 
               <h2>Try the 3D viewer</h2>
-
-              <p className="sectionText">
-                Explore a real experimental protein structure
-                before starting your own investigation.
-              </p>
 
               <div className="demoViewer" id="demo">
                 <div className="demoViewerHeader">
@@ -4233,9 +4048,15 @@ const organism = commonName
             </div>
           </div>
         </section>
+        )}
+        {activePage === "home" && <section className="homeAbout">
+          <h2>Why I made FoldCheck</h2>
+          <p>I'm Yousef, a student who likes biology, chemistry and coding. After learning about AlphaFold, I started wondering how we can tell whether a predicted protein structure is reliable. That question turned into FoldCheck.</p>
+          <button className="aboutLink" onClick={() => { setActivePage("about"); window.scrollTo(0, 0); }}>Read my story →</button>
+        </section>}
       </main>
     </div>
   );
 }
 
-export default App;
+export default FoldBasics;

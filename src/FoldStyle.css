@@ -1,6 +1,6 @@
-
 @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap");
 
+/* Shared colours, typography and basic page defaults */
 :root {
   font-family: "Inter", sans-serif;
   color: #f4f7fb;
@@ -21,8 +21,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background:
-    radial-gradient(
+  background: radial-gradient(
       circle at 72% 20%,
       rgba(49, 126, 121, 0.08),
       transparent 25%
@@ -49,10 +48,11 @@ a {
   overflow-x: clip;
 }
 
+/* Keep navigation visible while exploring the page */
 .nav {
   position: sticky;
-top: 0;
-z-index: 1000;
+  top: 0;
+  z-index: 1000;
   height: 78px;
   padding: 0 5.5vw;
   display: flex;
@@ -62,8 +62,8 @@ z-index: 1000;
   background: rgba(5, 8, 13, 0.78);
   backdrop-filter: blur(18px);
   position: sticky;
-top: 0;
-z-index: 1000;
+  top: 0;
+  z-index: 1000;
 }
 
 .brand {
@@ -130,6 +130,7 @@ z-index: 1000;
   border-color: rgba(139, 239, 222, 0.45);
 }
 
+/* Homepage hero and first impressions */
 .hero {
   min-height: 680px;
   padding: 90px 5.5vw 80px;
@@ -144,8 +145,7 @@ z-index: 1000;
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+  background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
   background-size: 46px 46px;
   mask-image: linear-gradient(to bottom, black, transparent 88%);
@@ -306,8 +306,7 @@ z-index: 1000;
   border: 1px solid rgba(162, 247, 232, 0.65);
   border-radius: 50%;
   background: #102b2a;
-  box-shadow:
-    0 0 0 7px rgba(95, 219, 199, 0.05),
+  box-shadow: 0 0 0 7px rgba(95, 219, 199, 0.05),
     0 0 28px rgba(92, 229, 207, 0.22);
 }
 
@@ -448,8 +447,7 @@ z-index: 1000;
   padding: 105px 5.5vw 115px;
   position: relative;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  background:
-    radial-gradient(
+  background: radial-gradient(
       circle at 50% 10%,
       rgba(53, 159, 147, 0.08),
       transparent 32%
@@ -482,6 +480,7 @@ z-index: 1000;
   color: #8493a2;
 }
 
+/* Protein lookup on the homepage */
 .searchBox {
   max-width: 850px;
   margin-top: 42px;
@@ -603,7 +602,6 @@ z-index: 1000;
   100% {
     transform: translateY(0) rotate(-2deg);
   }
-
   50% {
     transform: translateY(-14px) rotate(2deg);
   }
@@ -613,7 +611,6 @@ z-index: 1000;
   from {
     transform: rotate(0deg);
   }
-
   to {
     transform: rotate(360deg);
   }
@@ -623,7 +620,6 @@ z-index: 1000;
   from {
     transform: rotate(55deg);
   }
-
   to {
     transform: rotate(-305deg);
   }
@@ -635,12 +631,10 @@ z-index: 1000;
     transform: translateY(-115px);
     opacity: 0;
   }
-
   15%,
   85% {
     opacity: 1;
   }
-
   50% {
     transform: translateY(115px);
   }
@@ -648,32 +642,27 @@ z-index: 1000;
 
 @media (max-width: 950px) {
   .navLinks {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  min-width: 0;
-}
-
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    min-width: 0;
+  }
   .hero {
     min-height: auto;
     grid-template-columns: 1fr;
     gap: 20px;
     padding-top: 75px;
   }
-
   .heroContent {
     max-width: 760px;
   }
-
   .heroVisual {
     min-height: 500px;
   }
-
   .principleSection {
     grid-template-columns: 1fr;
     gap: 30px;
   }
-
   .principleNumber {
     font-size: 60px;
   }
@@ -684,66 +673,54 @@ z-index: 1000;
     height: 68px;
     padding: 0 20px;
   }
-
   .navButton {
     display: none;
   }
-
   .hero {
     padding: 65px 20px 55px;
   }
-
   .hero h1 {
     font-size: 48px;
     letter-spacing: -2.5px;
   }
-
   .heroText {
     font-size: 15px;
   }
-
   .heroButtons {
     align-items: stretch;
     flex-direction: column;
   }
-
   .primaryButton,
   .secondaryButton {
     width: 100%;
   }
-
   .capabilities {
     gap: 18px;
   }
-
   .heroVisual {
     min-height: 400px;
     transform: scale(0.82);
   }
-
   .exploreSection {
     padding: 80px 20px;
   }
-
   .searchBox {
     align-items: stretch;
     flex-direction: column;
   }
-
   .searchBox button {
     width: 100%;
   }
-
   .principleSection {
     min-height: auto;
     padding: 80px 20px;
   }
-
   .principleContent h2 {
     letter-spacing: -2px;
   }
 }
 
+/* Respect visitors who prefer less animation */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -754,13 +731,13 @@ z-index: 1000;
   }
 }
 
+/* Guided intro: from cells and DNA to a predicted protein */
 .intro {
   position: fixed;
   inset: 0;
   z-index: 10000;
   overflow: hidden;
-  background:
-    radial-gradient(
+  background: radial-gradient(
       circle at 34% 46%,
       rgba(71, 87, 171, 0.11),
       transparent 28%
@@ -780,8 +757,7 @@ z-index: 1000;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+  background-image: linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
     linear-gradient(
       90deg,
       rgba(255, 255, 255, 0.018) 1px,
@@ -817,6 +793,7 @@ z-index: 1000;
   background: rgba(255, 255, 255, 0.07);
 }
 
+/* Small progress markers for each intro scene */
 .introProgress {
   position: absolute;
   left: 50%;
@@ -832,8 +809,7 @@ z-index: 1000;
   height: 2px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.12);
-  transition:
-    background 0.5s ease,
+  transition: background 0.5s ease,
     box-shadow 0.5s ease;
 }
 
@@ -854,18 +830,23 @@ z-index: 1000;
   opacity: 0;
   visibility: hidden;
   transform: scale(1.025);
-  transition:
-    opacity 1s ease,
+  transition: opacity 1s ease,
     transform 1.4s ease,
     visibility 1s;
 }
 
+/* Only show the artwork for the current stage */
 .introStage0 .humanScene,
 .introStage1 .cellScene,
-.introStage2 .sequenceScene,
-.introStage3 .predictionScene,
-.introStage4 .uncertaintyScene,
-.introStage5 .foldcheckScene {
+.introStage2 .dnaScene,
+.introStage3 .transcriptionScene,
+.introStage4 .mrnaScene,
+.introStage5 .translationScene,
+.introStage6 .sequenceScene,
+.introStage7 .foldingScene,
+.introStage8 .predictionScene,
+.introStage9 .uncertaintyScene,
+.introStage10 .foldcheckScene {
   opacity: 1;
   visibility: visible;
   transform: scale(1);
@@ -915,8 +896,6 @@ z-index: 1000;
   line-height: 1.75;
 }
 
-
-
 .scienceVisual {
   position: relative;
   width: min(48vw, 660px);
@@ -950,8 +929,7 @@ z-index: 1000;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  filter:
-    saturate(1.04)
+  filter: saturate(1.04)
     contrast(1.05)
     drop-shadow(0 24px 45px rgba(0, 0, 0, 0.5));
   animation: scienceImageFloat 7s ease-in-out infinite;
@@ -966,8 +944,7 @@ z-index: 1000;
   width: min(46vw, 610px);
   height: auto;
   border-radius: 50%;
-  animation:
-    scienceImageFloat 7s ease-in-out infinite,
+  animation: scienceImageFloat 7s ease-in-out infinite,
     cellSlowTurn 14s ease-in-out infinite;
 }
 
@@ -1025,8 +1002,6 @@ z-index: 1000;
   box-shadow: 0 0 10px rgba(120, 217, 203, 0.7);
 }
 
-
-
 .humanScienceVisual {
   transform: translateX(-1vw);
 }
@@ -1059,8 +1034,6 @@ z-index: 1000;
 .humanLabelThree span {
   left: 100%;
 }
-
-
 
 .cellScienceVisual::after {
   content: "";
@@ -1122,8 +1095,6 @@ z-index: 1000;
   width: 38px;
 }
 
-
-
 .aminoScienceVisual {
   width: min(50vw, 700px);
 }
@@ -1157,8 +1128,6 @@ z-index: 1000;
   left: 100%;
 }
 
-
-
 .predictionVisual {
   position: relative;
   width: min(46vw, 600px);
@@ -1191,8 +1160,7 @@ z-index: 1000;
   object-fit: contain;
   border-radius: 28px;
   mix-blend-mode: screen;
-  filter:
-  saturate(0.92)
+  filter: saturate(0.92)
   contrast(1.08)
   drop-shadow(0 28px 45px rgba(0, 0, 0, 0.48));
   animation: predictionImageFloat 8s ease-in-out infinite;
@@ -1203,7 +1171,6 @@ z-index: 1000;
   100% {
     transform: translateY(5px) scale(0.985);
   }
-
   50% {
     transform: translateY(-9px) scale(1.015);
   }
@@ -1265,8 +1232,7 @@ z-index: 1000;
   height: 14px;
   border-radius: 50%;
   background: #74d8c9;
-  box-shadow:
-    0 0 0 7px rgba(116, 216, 201, 0.05),
+  box-shadow: 0 0 0 7px rgba(116, 216, 201, 0.05),
     0 0 20px rgba(116, 216, 201, 0.4);
 }
 
@@ -1316,8 +1282,6 @@ z-index: 1000;
   background: #67d8c7;
   box-shadow: 0 0 10px rgba(103, 216, 199, 0.7);
 }
-
-
 
 .uncertaintyVisual {
   position: relative;
@@ -1428,8 +1392,7 @@ z-index: 1000;
   height: 145px;
   border: 1px solid rgba(255, 171, 67, 0.72);
   border-radius: 50%;
-  box-shadow:
-    0 0 25px rgba(255, 171, 67, 0.09),
+  box-shadow: 0 0 25px rgba(255, 171, 67, 0.09),
     inset 0 0 25px rgba(255, 171, 67, 0.04);
   animation: warningPulse 2.2s ease-in-out infinite;
 }
@@ -1462,8 +1425,6 @@ z-index: 1000;
   );
 }
 
-
-
 .foldcheckScene {
   display: flex;
   flex-direction: column;
@@ -1491,8 +1452,7 @@ z-index: 1000;
   color: #8ce7d9;
   font-family: "DM Mono", monospace;
   font-size: 27px;
-  box-shadow:
-    0 0 45px rgba(95, 216, 198, 0.08),
+  box-shadow: 0 0 45px rgba(95, 216, 198, 0.08),
     inset 0 0 25px rgba(95, 216, 198, 0.035);
   animation: finalGlow 2.8s ease-in-out infinite;
 }
@@ -1538,14 +1498,11 @@ z-index: 1000;
   margin-right: auto;
 }
 
-
-
 @keyframes scienceImageFloat {
   0%,
   100% {
     transform: translateY(4px) scale(0.985);
   }
-
   50% {
     transform: translateY(-7px) scale(1.015);
   }
@@ -1556,7 +1513,6 @@ z-index: 1000;
   100% {
     rotate: -1deg;
   }
-
   50% {
     rotate: 1.5deg;
   }
@@ -1568,7 +1524,6 @@ z-index: 1000;
     opacity: 0.3;
     transform: scale(0.96);
   }
-
   50% {
     opacity: 0.8;
     transform: scale(1.04);
@@ -1580,7 +1535,6 @@ z-index: 1000;
     opacity: 0;
     transform: translateY(8px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1592,7 +1546,6 @@ z-index: 1000;
   100% {
     transform: translateY(5px) rotate(-4deg) scale(0.98);
   }
-
   50% {
     transform: translateY(-9px) rotate(5deg) scale(1.025);
   }
@@ -1603,7 +1556,6 @@ z-index: 1000;
   100% {
     transform: translateY(5px) rotate(-2deg);
   }
-
   50% {
     transform: translateY(-8px) rotate(2deg);
   }
@@ -1615,7 +1567,6 @@ z-index: 1000;
     opacity: 0.42;
     transform: scale(0.9);
   }
-
   50% {
     opacity: 1;
     transform: scale(1.08);
@@ -1625,19 +1576,14 @@ z-index: 1000;
 @keyframes finalGlow {
   0%,
   100% {
-    box-shadow:
-      0 0 28px rgba(95, 216, 198, 0.07),
+    box-shadow: 0 0 28px rgba(95, 216, 198, 0.07),
       inset 0 0 20px rgba(95, 216, 198, 0.03);
   }
-
   50% {
-    box-shadow:
-      0 0 72px rgba(95, 216, 198, 0.19),
+    box-shadow: 0 0 72px rgba(95, 216, 198, 0.19),
       inset 0 0 32px rgba(95, 216, 198, 0.06);
   }
 }
-
-
 
 @media (max-width: 1000px) {
   .introScene {
@@ -1646,13 +1592,11 @@ z-index: 1000;
     padding-left: 5vw;
     padding-right: 5vw;
   }
-
   .scienceVisual,
   .predictionVisual,
   .uncertaintyVisual {
     transform: scale(0.88);
   }
-
   .scienceLabel {
     font-size: 8px;
   }
@@ -1667,7 +1611,6 @@ z-index: 1000;
     padding: 78px 22px 65px;
     text-align: center;
   }
-
   .scienceVisual,
   .predictionVisual,
   .uncertaintyVisual {
@@ -1675,52 +1618,42 @@ z-index: 1000;
     height: min(48vh, 440px);
     transform: scale(0.78);
   }
-
   .humanImage {
     height: min(47vh, 430px);
   }
-
   .cellImage,
   .aminoImage {
     width: min(90vw, 500px);
   }
-
   .introCopy {
     max-width: 620px;
     justify-self: center;
   }
-
   .introCopy h1,
   .foldcheckScene h1 {
     font-size: clamp(36px, 8vw, 54px);
     letter-spacing: -0.045em;
   }
-
   .introCopy > p:last-child,
   .foldcheckScene > p:last-child {
     margin-left: auto;
     margin-right: auto;
     font-size: 14px;
   }
-
   .scienceLabel {
     transform: scale(0.88);
   }
-
   .skipIntro {
     top: 24px;
     right: 22px;
   }
-
   .introIndex {
     top: 28px;
     left: 22px;
   }
-
   .finalEvidence {
     grid-template-columns: repeat(2, minmax(115px, 1fr));
   }
-
   .foldcheckScene {
     padding-left: 24px;
     padding-right: 24px;
@@ -1732,30 +1665,24 @@ z-index: 1000;
     bottom: 20px;
     gap: 5px;
   }
-
   .introProgress span {
     width: 25px;
   }
-
   .scienceVisual,
   .predictionVisual,
   .uncertaintyVisual {
     transform: scale(0.66);
   }
-
   .scienceLabel {
     font-size: 7px;
   }
-
   .proteinRibbon,
   .uncertaintyProtein {
     transform-origin: center;
   }
-
   .finalEvidence {
     gap: 6px;
   }
-
   .finalEvidence div {
     padding: 9px;
   }
@@ -1774,30 +1701,29 @@ z-index: 1000;
   object-fit: contain;
   border-radius: 28px;
   mix-blend-mode: screen;
-  filter: 
-  saturate(0.92)
+  filter: saturate(0.92)
   contrast(1.06)
   drop-shadow(0 28px 45px rgba(0, 0, 0, 0.48));
   animation: uncertaintyImageFloat 8s ease-in-out infinite;
 }
 
-uncertainty.Readout {
+.uncertaintyReadout {
   position: absolute;
   bottom: 2px;
   left: 50%;
   z-index: 6;
   display: flex;
-align-items: center;
-gap: 8px;
-padding: 9px 12px;
-border: 1px solid rgba(115, 219, 203, 0.18);
-border-radius: 7px;
-background: rgba(4, 9, 14, 0.78);
-transform: translateX(-50%);
-color: rgba(220, 239, 235, 0.7);
-font-family: "DM Mono", monospace;
-font-size: 9px;
-letter-spacing: 0.12em;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(115, 219, 203, 0.18);
+  border-radius: 7px;
+  background: rgba(4, 9, 14, 0.78);
+  transform: translateX(-50%);
+  color: rgba(220, 239, 235, 0.7);
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
 }
 
 .uncertaintyDot {
@@ -1809,14 +1735,13 @@ letter-spacing: 0.12em;
 }
 
 @keyframes uncertaintyImageFloat {
-0%,
+  0%,
 100% {
-  transform: translateY(5px) scale(0.985);
-}
-
-50% {
-  transform: translateY(-9px) scale(1.015);
-}
+    transform: translateY(5px) scale(0.985);
+  }
+  50% {
+    transform: translateY(-9px) scale(1.015);
+  }
 }
 
 .nucleusLabel {
@@ -1863,10 +1788,9 @@ letter-spacing: 0.12em;
   width: min(1400px, calc(100% - 80px));
   margin: 80px auto;
   padding: 34px;
-  border: 1px solid rgba(115, 291, 203, 0.14);
+  border: 1px solid rgba(115, 191, 203, 0.14);
   border-radius: 28px;
-  background:
-  radial-gradient(
+  background: radial-gradient(
     circle at 75% 15%,
     rgba(71, 184, 166, 0.08),
     transparent 32%
@@ -1905,9 +1829,9 @@ letter-spacing: 0.12em;
 
 .proteinIdentity span {
   color: rgba(220, 235, 232, 0.42);
-font-family: "DM Mono", monospace;
-font-size: 10px;
-letter-spacing: 0.15em;
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
 }
 
 .proteinIdentity strong {
@@ -1916,6 +1840,7 @@ letter-spacing: 0.15em;
   font-size: 22px;
 }
 
+/* The 3D viewer needs a stable frame on smaller screens too */
 .viewerShell {
   position: relative;
   overflow: hidden;
@@ -1931,17 +1856,16 @@ letter-spacing: 0.15em;
     width: min(100% - 28px, 1400px);
     padding: 20px;
   }
-
   .workspaceHeader {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .proteinIdentity {
     align-items: flex-start;
   }
 }
 
+/* Protein workspace: structure viewer and confidence tools */
 .workspacePage {
   width: min(1500px, calc(100% - 70px));
   margin: 0 auto;
@@ -1995,9 +1919,9 @@ letter-spacing: 0.15em;
   margin-bottom: 22px;
   padding: 5px;
   overflow-x: auto;
- border: 1px solid rgba(255, 255, 255, 0.07);
- border-radius: 12px;
- background: rgba(255, 255, 255, 0.025); 
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .analysisTab {
@@ -2050,6 +1974,7 @@ letter-spacing: 0.15em;
   min-width: 0;
   box-sizing: border-box;
 }
+
 .structureViewer {
   min-width: 0;
   padding: 22px;
@@ -2098,12 +2023,11 @@ letter-spacing: 0.15em;
 .evidencePanel {
   min-height: 600px;
   min-width: 0;
-overflow-wrap: anywhere;
+  overflow-wrap: anywhere;
   padding: 22px;
   border: 1px solid rgba(115, 219, 203, 0.11);
   border-radius: 20px;
-  background:
-  radial-gradient(
+  background: radial-gradient(
     circle at 100% 0%,
     rgba(78, 183, 166, 0.07),
     transparent 32%
@@ -2148,7 +2072,6 @@ overflow-wrap: anywhere;
   color: #73dbcb;
   font-size: 18px;
 }
-
 
 .emptySelection p {
   margin: 10px auto 0;
@@ -2218,10 +2141,9 @@ overflow-wrap: anywhere;
 }
 
 @media (max-width: 1050px) {
-  .structureWorkspace{
+  .structureWorkspace {
     grid-template-columns: 1fr;
   }
-
   .evidencePanel {
     min-height: auto;
   }
@@ -2232,20 +2154,16 @@ overflow-wrap: anywhere;
     width: calc(100% - 28px);
     padding-top: 32px;
   }
-
   .workspaceTop {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .workspaceAccession {
     align-items: flex-start;
   }
-
   .structureViewer {
     padding: 14px;
   }
-
   .viewerHeading {
     align-items: flex-start;
     flex-direction: column;
@@ -2272,7 +2190,7 @@ overflow-wrap: anywhere;
 .navTextButton {
   padding: 0;
   border: none;
-  background:transparent;
+  background: transparent;
   color: #8e99a8;
   font-size: 13px;
 }
@@ -2283,11 +2201,11 @@ overflow-wrap: anywhere;
 
 .confidenceLegend {
   display: flex;
-flex-direction: column;
-gap: 12px;
+  flex-direction: column;
+  gap: 12px;
   position: relative;
-z-index: 2;
-clear: both;
+  z-index: 2;
+  clear: both;
   margin-top: 14px;
   padding: 16px 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -2307,17 +2225,17 @@ clear: both;
 
 .confidenceInfoButton {
   width: 20px;
-height: 20px;
-display: grid;
-place-items: center;
-padding: 0;
-border: 1px solid rgba(255, 255, 255, 0.18);
-border-radius: 50%;
-background: transparent;
-color: #9fb0b7;
-font-size: 11px;
-font-weight: 700;
-cursor: pointer;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: transparent;
+  color: #9fb0b7;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .confidenceInfoButton:hover {
@@ -2339,7 +2257,7 @@ cursor: pointer;
   min-width: 0;
 }
 
-confidenceScale strong {
+.confidenceScale strong {
   color: #dce7ea;
   font-size: 12px;
   font-weight: 600;
@@ -2358,11 +2276,11 @@ confidenceScale strong {
 }
 
 .confidenceDot.veryHigh,
-.confidenceDot.veryHight {
+.confidenceDot.veryHigh {
   background: #0053d6;
 }
 
-confidenceDot.confident {
+.confidenceDot.confident {
   background: #65cbf3;
 }
 
@@ -2374,7 +2292,7 @@ confidenceDot.confident {
   background: #ff7d45;
 }
 
-confidence.info {
+.confidence.info {
   margin-top: 15px;
   padding: 14px 15px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
@@ -2507,9 +2425,6 @@ confidence.info {
   color: #ffffff;
   font-weight: 650;
 }
-
-
-
 
 body {
   background: #05080d;
@@ -2652,12 +2567,10 @@ body {
     min-height: auto;
     padding: 85px 24px 70px;
   }
-
   .exploreLayout {
     grid-template-columns: 1fr;
     gap: 70px;
   }
-
   .exploreSection {
     padding: 45px 24px 80px;
   }
@@ -2667,24 +2580,19 @@ body {
   .hero h1 {
     font-size: clamp(62px, 15vw, 90px);
   }
-
   .hero h2 {
     font-size: 25px;
   }
-
   .heroText,
   .heroFeatures {
     font-size: 14px;
   }
-
   .heroButtons {
     flex-direction: column;
   }
-
   .heroButtons > * {
     width: 100%;
   }
-
   .viewerBasicsBar {
     gap: 12px;
     font-size: 12px;
@@ -2814,7 +2722,6 @@ body {
     grid-template-columns: minmax(0, 1fr);
     gap: 18px;
   }
-
   .workspaceResizeHandle {
     display: none;
   }
@@ -3197,7 +3104,6 @@ body {
   .structureWorkspace {
     align-items: start;
   }
-
   .structureWorkspace > .evidencePanel {
     position: sticky;
     top: 16px;
@@ -3325,7 +3231,6 @@ body {
   .structureSearchForm {
     flex-wrap: wrap;
   }
-
   .structureSearchForm input {
     flex-basis: 100%;
   }
@@ -3449,7 +3354,6 @@ body {
   .proteinOverview {
     padding: 18px;
   }
-
   .proteinOverview h2 {
     font-size: 22px;
   }
@@ -3517,17 +3421,14 @@ body {
   max-width: 520px;
   width: 100%;
   box-sizing: border-box;
-
   color: #ffb4b4;
   background: rgba(220, 65, 65, 0.1);
   border: 1px solid rgba(255, 110, 110, 0.3);
   border-radius: 10px;
-
   font-size: 13px;
   line-height: 1.5;
   text-align: left;
 }
-
 
 .biologicalFunctionDetails {
   padding: 18px 20px;
@@ -3717,15 +3618,12 @@ body {
   background: rgba(103, 213, 203, 0.23);
 }
 
-
-
 .geometryMetric {
   width: 100%;
   padding: 28px 32px;
   border: 1px solid rgba(115, 219, 203, 0.15);
   border-radius: 18px;
-  background:
-    linear-gradient(
+  background: linear-gradient(
       135deg,
       rgba(20, 45, 50, 0.55),
       rgba(7, 15, 23, 0.9)
@@ -3773,8 +3671,6 @@ body {
   font-weight: 600;
 }
 
-
-
 .geometryBackButton {
   display: inline-flex;
   align-items: center;
@@ -3783,15 +3679,12 @@ body {
   width: auto;
   min-height: 46px;
   padding: 12px 22px;
-
   border: 1px solid rgba(115, 219, 203, 0.35);
   border-radius: 10px;
   background: rgba(115, 219, 203, 0.09);
-
   color: #8ce7d9;
   font-size: 14px;
   font-weight: 600;
-
   transition: all 0.2s ease;
 }
 
@@ -3809,17 +3702,21 @@ body {
   border: 1px solid #355064;
   max-width: 100%;
 }
+
 .workspacePage select:focus-visible,
 .workspacePage input:focus-visible {
   outline: 2px solid #69cfc2;
   outline-offset: 2px;
 }
+
 .workspacePage article {
   min-width: 0;
 }
+
 .workspacePage article p {
   overflow-wrap: anywhere;
 }
+
 @media (max-width: 640px) {
   .workspacePage {
     min-width: 0;
@@ -3829,28 +3726,513 @@ body {
   }
 }
 
-.foldcheckLearningGrid,.foldcheckComparisonGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:24px 0}
-.foldcheckLearningCard,.foldcheckDetailPanel{background:#0d1c2a;border:1px solid #244053;border-radius:18px;padding:24px;color:#e8f3f8}
-.foldcheckLearningCard h2,.foldcheckLearningCard h3{font-size:19px;margin:0 0 12px}
-.foldcheckLearningCard p,.foldcheckDetailPanel p{line-height:1.65;color:#c0d4df}
-.foldcheckDetailPanel{margin-top:26px}
-.foldcheckDetailPanel h3{margin-top:28px}
-.foldcheckMutationControls{display:flex;flex-wrap:wrap;gap:18px;margin:24px 0}
-.foldcheckMutationControls label{display:grid;gap:9px;min-width:220px;color:#dcebf2}
-.foldcheckMutationControls input,.foldcheckMutationControls select{padding:12px;border:1px solid #365366;border-radius:9px;background:#13293a;color:#e8f3f8;font:inherit}
-.foldcheckMutationViewer{height:600px;border-radius:18px;overflow:hidden;border:1px solid #244053;background:#07131f;margin:20px 0}
-.foldcheckMutationViewer>div{height:100%!important}
-.foldcheckTagList{display:flex;flex-wrap:wrap;gap:10px}
-.foldcheckTag{background:#163c45;color:#b8f0e5;border:1px solid #2b777a;border-radius:999px;padding:8px 14px}
-.foldcheckRegionList{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
-.foldcheckRegionList button{display:flex;flex-direction:column;align-items:flex-start;gap:7px;background:#122c3c;border:1px solid #315165;color:#e8f3f8;border-radius:12px;padding:14px;text-align:left;cursor:pointer}
-.foldcheckRegionList button span{color:#a9c8d3;font-size:13px}
-.foldcheckSourceNote{font-size:13px;color:#a8bbc8!important}
-.msp-plugin .msp-viewport,.msp-plugin .msp-layout-expanded,.msp-plugin .msp-viewport-controls{background-color:#07131f}
+.foldcheckLearningGrid,.foldcheckComparisonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
 
-.functionalRegionRange { background: #d2fff3; color: #07352e; border: 2px solid #42e8c4; font-weight: 800; padding: 11px 15px; font-size: 13px; box-shadow: 0 2px 0 rgba(19, 188, 152, .25); display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
-.functionalRegionRange:not(:disabled):hover { background: #75f5d7; color: #052e28; border-color: #75f5d7; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(32, 191, 169, .32); }
-.functionalRegionRange:not(:disabled):focus-visible { outline: 3px solid #ffffff; outline-offset: 3px; }
-.functionalRegionAction { font-size: 10px; letter-spacing: .06em; padding: 3px 5px; border-radius: 4px; background: #087b6c; color: #ffffff; }
-.foldcheckRegionHint,.foldcheckLinkedHint { border: 1px solid #37d6bb; border-radius: 12px; padding: 14px 18px; background: rgba(24, 165, 142, .13); color: #d9fff5; line-height: 1.6; font-weight: 600; }
-.foldcheckLinkedHint { margin: 20px 0 8px; }
+.foldcheckLearningCard,.foldcheckDetailPanel {
+  background: #0d1c2a;
+  border: 1px solid #244053;
+  border-radius: 18px;
+  padding: 24px;
+  color: #e8f3f8;
+}
+
+.foldcheckLearningCard h2,.foldcheckLearningCard h3 {
+  font-size: 19px;
+  margin: 0 0 12px;
+}
+
+.foldcheckLearningCard p,.foldcheckDetailPanel p {
+  line-height: 1.65;
+  color: #c0d4df;
+}
+
+.foldcheckDetailPanel {
+  margin-top: 26px;
+}
+
+.foldcheckDetailPanel h3 {
+  margin-top: 28px;
+}
+
+.foldcheckMutationControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 24px 0;
+}
+
+.foldcheckMutationControls label {
+  display: grid;
+  gap: 9px;
+  min-width: 220px;
+  color: #dcebf2;
+}
+
+.foldcheckMutationControls input,.foldcheckMutationControls select {
+  padding: 12px;
+  border: 1px solid #365366;
+  border-radius: 9px;
+  background: #13293a;
+  color: #e8f3f8;
+  font: inherit;
+}
+
+.foldcheckMutationViewer {
+  height: 600px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #244053;
+  background: #07131f;
+  margin: 20px 0;
+}
+
+.foldcheckMutationViewer>div {
+  height: 100% !important;
+}
+
+.foldcheckTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.foldcheckTag {
+  background: #163c45;
+  color: #b8f0e5;
+  border: 1px solid #2b777a;
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+.foldcheckRegionList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+  gap: 10px;
+}
+
+.foldcheckRegionList button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  background: #122c3c;
+  border: 1px solid #315165;
+  color: #e8f3f8;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.foldcheckRegionList button span {
+  color: #a9c8d3;
+  font-size: 13px;
+}
+
+.foldcheckSourceNote {
+  font-size: 13px;
+  color: #a8bbc8 !important;
+}
+
+.msp-plugin .msp-viewport,.msp-plugin .msp-layout-expanded,.msp-plugin .msp-viewport-controls {
+  background-color: #07131f;
+}
+
+.functionalRegionRange {
+  background: #d2fff3;
+  color: #07352e;
+  border: 2px solid #42e8c4;
+  font-weight: 800;
+  padding: 11px 15px;
+  font-size: 13px;
+  box-shadow: 0 2px 0 rgba(19, 188, 152, .25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.functionalRegionRange:not(:disabled):hover {
+  background: #75f5d7;
+  color: #052e28;
+  border-color: #75f5d7;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(32, 191, 169, .32);
+}
+
+.functionalRegionRange:not(:disabled):focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.functionalRegionAction {
+  font-size: 10px;
+  letter-spacing: .06em;
+  padding: 3px 5px;
+  border-radius: 4px;
+  background: #087b6c;
+  color: #ffffff;
+}
+
+.foldcheckRegionHint,.foldcheckLinkedHint {
+  border: 1px solid #37d6bb;
+  border-radius: 12px;
+  padding: 14px 18px;
+  background: rgba(24, 165, 142, .13);
+  color: #d9fff5;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.foldcheckLinkedHint {
+  margin: 20px 0 8px;
+}
+
+/* Protein Basics: searchable glossary and alphabetical navigation */
+.fc-basics {
+  --bg: #090f14;
+  --panel: #101c22;
+  --line: #25373d;
+  --text: #e3ebed;
+  --muted: #9badb3;
+  --accent: #7dd8c9;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 68px 24px 100px;
+  font-family: inherit;
+}
+
+.fc-basics * {
+  box-sizing: border-box;
+}
+
+.fc-basics .inner {
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+.fc-basics h1 {
+  font-size: clamp(40px,6vw,66px);
+  letter-spacing: -2px;
+  line-height: 1.08;
+  margin: 0 0 18px;
+}
+
+.fc-basics .intro {
+  max-width: 710px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.8;
+  margin: 0 0 40px;
+}
+
+.fc-basics .controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.fc-basics input,.fc-basics select {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 15px 17px;
+  border-radius: 9px;
+  font: inherit;
+  outline: none;
+}
+
+.fc-basics input {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.fc-basics select {
+  flex: 0 1 220px;
+}
+
+.fc-basics input:focus,.fc-basics select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px #7dd8c922;
+}
+
+.fc-basics input::placeholder {
+  color: #879aa0;
+}
+
+.fc-basics .alphabet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0 0 32px;
+}
+
+.fc-basics .alphabet button {
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #a5b8bd;
+  font: inherit;
+  font-size: 13px;
+  min-width: 30px;
+  padding: 9px 7px;
+  cursor: pointer;
+}
+
+.fc-basics .alphabet button:hover:not(:disabled) {
+  color: var(--accent);
+  background: #16282b;
+}
+
+.fc-basics .alphabet button.active {
+  background: #183d3b;
+  color: #a6f1e3;
+  border-color: #3e8d80;
+}
+
+.fc-basics .alphabet button:disabled {
+  opacity: .25;
+  cursor: default;
+}
+
+.fc-basics .results {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 16px;
+}
+
+.fc-basics .reset {
+  background: none;
+  color: var(--accent);
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.fc-basics .entry {
+  display: grid;
+  grid-template-columns: minmax(170px,260px) 1fr;
+  gap: 28px;
+  padding: 25px 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.fc-basics .entry h2 {
+  font-size: 18px;
+  line-height: 1.45;
+  margin: 0 0 8px;
+  font-weight: 650;
+}
+
+.fc-basics .topic {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.fc-basics .entry p {
+  color: #b6c5c9;
+  line-height: 1.75;
+  margin: 0;
+  font-size: 15px;
+}
+
+.fc-basics .empty {
+  padding: 54px 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.fc-basics .footer-note {
+  color: #83969c;
+  font-size: 13px;
+  line-height: 1.7;
+  margin-top: 32px;
+}
+
+@media (max-width:650px) {
+  .fc-basics {
+    padding: 44px 18px 75px;
+  }
+  .fc-basics .entry {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 22px 0;
+  }
+  .fc-basics select {
+    flex: 1 1 100%;
+  }
+  .fc-basics .alphabet {
+    gap: 2px;
+  }
+}
+
+/* Extra visuals for the DNA-to-protein intro sequence */
+.introStoryLead {
+  position: absolute;
+  z-index: 12;
+  top: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  color: #d6ece8;
+  font-size: clamp(13px, 1.4vw, 17px);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.introStoryVisual {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  border: 1px solid rgba(95,216,198,.18);
+  border-radius: 24px;
+  background: radial-gradient(circle at center, rgba(45,118,112,.22), rgba(7,16,24,.2) 65%);
+  overflow: hidden;
+}
+
+.introStoryImage {
+  display: block;
+  width: 100%;
+  max-height: 440px;
+  object-fit: contain;
+}
+
+.introStoryCode {
+  padding: 20px;
+  color: #78e1d0;
+  font-family: "DM Mono", monospace;
+  font-size: clamp(26px, 3.5vw, 55px);
+  font-weight: 700;
+  letter-spacing: .035em;
+  text-align: center;
+}
+
+.introStoryCaption {
+  font-family: "DM Mono", monospace;
+  font-size: 12px;
+  letter-spacing: .14em;
+  color: #b1c9ce;
+}
+
+.intro .introOverline {
+  display: block;
+}
+
+@media (max-width: 760px) {
+  .introStoryLead {
+    top: 76px;
+    white-space: normal;
+    width: 75%;
+  }
+  .introStoryVisual {
+    min-height: 170px;
+  }
+  .introStoryImage {
+    max-height: 230px;
+  }
+  .introScene {
+    gap: 16px;
+  }
+}
+
+/* Homepage and About Me */
+.newHomeHero { min-height: 460px; padding: 72px 5.5vw 44px; }
+.newHomeHero .heroContent { max-width: 820px; }
+.newHomeHero h1 { font-size: clamp(46px, 6vw, 82px); letter-spacing: -0.055em; }
+.newHomeHero .heroText { margin-top: 17px; max-width: 610px; line-height: 1.6; }
+.homeAction { position: relative; display: inline-flex; justify-content: center; margin-top: 45px; }
+.handNote { position: absolute; top: -43px; left: -105px; color: #85d8cb; font-size: 14px; transform: rotate(-8deg); font-family: cursive; }
+.handArrow { position: absolute; width: 83px; height: 53px; top: -42px; left: -68px; color: #85d8cb; transform: rotate(12deg); }
+.homeHint { margin: 13px 0 0; color: #899ca8; font-size: 13px; }
+.homeReplay { margin-top: 12px; padding: 5px 10px; border: 0; background: none; color: #79bcb2; font-size: 12px; }
+.homeOverview, .homeAbout { max-width: 960px; margin: 0 auto; padding: 48px 25px; }
+.homeOverview h2, .homeAbout h2 { margin: 0 0 12px; font-size: clamp(26px, 3vw, 36px); font-weight: 500; }
+.homeOverview p, .homeAbout p { margin: 0; max-width: 760px; color: #a6b4bf; font-size: 15px; line-height: 1.65; }
+.homeAbout { border-top: 1px solid rgba(255,255,255,.08); padding-bottom: 70px; }
+.aboutLink, .aboutBack { border: 0; background: none; color: #8bd8cd; padding: 0; cursor: pointer; }
+.aboutLink { margin-top: 18px; font-size: 14px; }
+.aboutPage { max-width: 800px; margin: 0 auto; padding: 55px 24px 85px; }
+.aboutPage h1 { margin: 25px 0 19px; font-size: clamp(42px, 6vw, 66px); font-weight: 500; }
+.aboutStory { margin-bottom: 25px; }
+.aboutStory p { margin: 0 0 8px; color: #c0cbd3; line-height: 1.65; font-size: 16px; }
+.aboutPage .primaryButton { display: inline-flex; align-items: center; }
+@media (max-width: 600px) { .newHomeHero { padding: 65px 22px 35px; } .homeAction { margin-top: 52px; } .handNote { left: -42px; top: -48px; } .handArrow { left: -20px; top: -46px; width: 58px; } .homeOverview, .homeAbout { padding: 36px 22px; } }
+
+/* Opening title is its own intro scene, before the original illustrated sequence. */
+.introOpening { position: absolute; inset: 0; display: grid; place-items: center; padding: 28px; text-align: center; opacity: 0; visibility: hidden; transition: opacity .7s ease, visibility .7s; }
+.introOpening h1 { max-width: 950px; font-size: clamp(38px, 6vw, 78px); line-height: 1.08; letter-spacing: -.05em; }
+.introStage0 .introOpening { opacity: 1; visibility: visible; }
+.introStage0 .humanScene { opacity: 0; visibility: hidden; }
+.introStage1 .humanScene, .introStage2 .cellScene, .introStage3 .sequenceScene, .introStage4 .predictionScene, .introStage5 .uncertaintyScene, .introStage6 .foldcheckScene { opacity: 1; visibility: visible; transform: scale(1); }
+.intro .introOverline, .intro .introIndex, .introStoryCaption { display: none !important; }
+.homeAction { gap: 12px; align-items: center; }
+@media(max-width:600px) { .homeAction { flex-direction: column; } .homeAction > button { width: 100%; } }
+
+.introStage1 .cellScene, .introStage2 .sequenceScene, .introStage3 .predictionScene, .introStage4 .uncertaintyScene, .introStage5 .foldcheckScene { opacity: 0; visibility: hidden; }
+.introStage6 .sequenceScene { opacity: 0; visibility: hidden; }
+
+/* No tiny labels or glowing status indicators in the workspace, thanks. */
+.workspacePage .sectionLabel, .workspacePage .viewerEyebrow, .workspacePage .evidencePanelHeader > span, .exploreSection .sectionLabel, .demoViewerHeader { display: none !important; }
+.liveDot { display: none !important; }
+/* About Me reads like an actual story, not fourteen separate text messages. */
+.aboutPage { max-width: 1050px; padding: 60px 34px 85px; }
+.aboutStory { max-width: 980px; margin: 0 auto 28px; }
+.aboutStory p { margin: 0 0 23px; font-size: clamp(16px, 1.45vw, 18px); line-height: 1.8; }
+.biologicalFunctionFull { margin: 18px 0 0; padding-left: 24px; }
+.biologicalFunctionFull li { margin: 0 0 12px; line-height: 1.65; color: #d2e1e6; }
+@media(max-width:600px) { .aboutPage { padding: 42px 22px 65px; } .aboutStory p { margin-bottom: 20px; } }
+
+/* Keep the homepage buttons together; the note points to Explore. */
+.homeAction { gap: 12px; align-items: center; flex-wrap: wrap; }
+.handNote { top: -57px; left: -122px; width: 175px; line-height: 1.35; text-align: center; }
+.proteinConfidenceInterpretation ul { margin: 13px 0 0; padding-left: 22px; color: #b8cbd2; font-size: 14px; line-height: 1.75; }
+.proteinConfidenceInterpretation li { margin: 0 0 9px; padding-left: 3px; }
+@media (max-width: 600px) {
+  .homeAction { gap: 10px; }
+  .handNote { left: -15px; top: -70px; width: 185px; font-size: 12px; }
+}
+
+/* The note has its own space above the buttons so it won't sit on the description. */
+.newHomeHero .homeAction { margin-top: 88px; }
+.newHomeHero .handNote { font-family: inherit; font-style: normal; font-weight: 500; transform: none; top: -62px; left: 0; width: 260px; text-align: left; white-space: normal; font-size: 13px; line-height: 1.45; }
+.newHomeHero .handArrow { top: -47px; left: 185px; width: 70px; height: 45px; transform: rotate(9deg); }
+@media (max-width: 600px) {
+  .newHomeHero .homeAction { margin-top: 105px; }
+  .newHomeHero .handNote { top: -80px; left: 0; width: 215px; }
+  .newHomeHero .handArrow { top: -57px; left: 145px; }
+}
+
+
+/* Keep the little pointer aimed at the Explore button, not the replay button. */
+.newHomeHero .homeAction { margin-top: 82px; }
+.newHomeHero .handNote { top: -60px; left: 0; width: 270px; }
+.newHomeHero .handArrow { top: -46px; left: 95px; width: 72px; height: 52px; transform: rotate(0deg); pointer-events: none; }
+@media (max-width: 600px) {
+  .newHomeHero .homeAction { margin-top: 100px; }
+  .newHomeHero .handNote { top: -78px; left: 0; }
+  .newHomeHero .handArrow { top: -57px; left: 90px; }
+}
+
+/* Sources: just the links, no giant bibliography. */
+.sourcesPage { max-width: 850px; margin: 0 auto; padding: 55px 28px 90px; }
+.sourcesPage h1 { font-size: clamp(40px, 5vw, 62px); margin: 24px 0 14px; }
+.sourcesPage > p { color: #b8cbd2; line-height: 1.65; margin-bottom: 30px; }
+.sourcesLinks { display: grid; gap: 12px; }
+.sourcesLinks a { display: block; padding: 18px 20px; border: 1px solid #29414d; border-radius: 12px; color: #78d5ce; text-decoration: none; background: #0d171d; }
+.sourcesLinks a:hover { border-color: #78d5ce; background: #11232a; }
