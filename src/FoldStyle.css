@@ -1,6 +1,7 @@
+/* if u see this can i have nothing headphones for free :) */
 @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap");
 
-/* Shared colours, typography and basic page defaults */
+/* ypography and page default */
 :root {
   font-family: "Inter", sans-serif;
   color: #f4f7fb;
@@ -48,7 +49,7 @@ a {
   overflow-x: clip;
 }
 
-/* Keep navigation visible while exploring the page */
+/* Keep navigation visible while seeing the page */
 .nav {
   position: sticky;
   top: 0;
@@ -130,7 +131,7 @@ a {
   border-color: rgba(139, 239, 222, 0.45);
 }
 
-/* Homepage hero and first impressions */
+/* first impressions */
 .hero {
   min-height: 680px;
   padding: 90px 5.5vw 80px;
@@ -480,7 +481,7 @@ a {
   color: #8493a2;
 }
 
-/* Protein lookup on the homepage */
+/* Protein lookup on homepage */
 .searchBox {
   max-width: 850px;
   margin-top: 42px;
@@ -720,7 +721,7 @@ a {
   }
 }
 
-/* Respect visitors who prefer less animation */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -731,7 +732,7 @@ a {
   }
 }
 
-/* Guided intro: from cells and DNA to a predicted protein */
+/* intro of transcription and lation */
 .intro {
   position: fixed;
   inset: 0;
@@ -793,7 +794,7 @@ a {
   background: rgba(255, 255, 255, 0.07);
 }
 
-/* Small progress markers for each intro scene */
+/* markers for scenes */
 .introProgress {
   position: absolute;
   left: 50%;
@@ -835,7 +836,7 @@ a {
     visibility 1s;
 }
 
-/* Only show the artwork for the current stage */
+
 .introStage0 .humanScene,
 .introStage1 .cellScene,
 .introStage2 .dnaScene,
@@ -1840,7 +1841,7 @@ a {
   font-size: 22px;
 }
 
-/* The 3D viewer needs a stable frame on smaller screens too */
+/* The 3D viewer needs stable frame on smaller scren*/
 .viewerShell {
   position: relative;
   overflow: hidden;
@@ -1865,7 +1866,7 @@ a {
   }
 }
 
-/* Protein workspace: structure viewer and confidence tools */
+/* structure and confidence tool */
 .workspacePage {
   width: min(1500px, calc(100% - 70px));
   margin: 0 auto;
@@ -3894,7 +3895,7 @@ body {
   margin: 20px 0 8px;
 }
 
-/* Protein Basics: searchable glossary and alphabetical navigation */
+/* searchable glossary and alphabetical choice for basics */
 .fc-basics {
   --bg: #090f14;
   --panel: #101c22;
@@ -4079,7 +4080,7 @@ body {
   }
 }
 
-/* Extra visuals for the DNA-to-protein intro sequence */
+/*DNA-to-protein intro  */
 .introStoryLead {
   position: absolute;
   z-index: 12;
@@ -4156,83 +4157,98 @@ body {
 .newHomeHero .heroContent { max-width: 820px; }
 .newHomeHero h1 { font-size: clamp(46px, 6vw, 82px); letter-spacing: -0.055em; }
 .newHomeHero .heroText { margin-top: 17px; max-width: 610px; line-height: 1.6; }
+
 .homeAction { position: relative; display: inline-flex; justify-content: center; margin-top: 45px; }
+
 .handNote { position: absolute; top: -43px; left: -105px; color: #85d8cb; font-size: 14px; transform: rotate(-8deg); font-family: cursive; }
+
 .handArrow { position: absolute; width: 83px; height: 53px; top: -42px; left: -68px; color: #85d8cb; transform: rotate(12deg); }
+
 .homeHint { margin: 13px 0 0; color: #899ca8; font-size: 13px; }
+
 .homeReplay { margin-top: 12px; padding: 5px 10px; border: 0; background: none; color: #79bcb2; font-size: 12px; }
+
 .homeOverview, .homeAbout { max-width: 960px; margin: 0 auto; padding: 48px 25px; }
 .homeOverview h2, .homeAbout h2 { margin: 0 0 12px; font-size: clamp(26px, 3vw, 36px); font-weight: 500; }
 .homeOverview p, .homeAbout p { margin: 0; max-width: 760px; color: #a6b4bf; font-size: 15px; line-height: 1.65; }
+
 .homeAbout { border-top: 1px solid rgba(255,255,255,.08); padding-bottom: 70px; }
+
 .aboutLink, .aboutBack { border: 0; background: none; color: #8bd8cd; padding: 0; cursor: pointer; }
 .aboutLink { margin-top: 18px; font-size: 14px; }
+
 .aboutPage { max-width: 800px; margin: 0 auto; padding: 55px 24px 85px; }
 .aboutPage h1 { margin: 25px 0 19px; font-size: clamp(42px, 6vw, 66px); font-weight: 500; }
+
 .aboutStory { margin-bottom: 25px; }
 .aboutStory p { margin: 0 0 8px; color: #c0cbd3; line-height: 1.65; font-size: 16px; }
+
 .aboutPage .primaryButton { display: inline-flex; align-items: center; }
+
 @media (max-width: 600px) { .newHomeHero { padding: 65px 22px 35px; } .homeAction { margin-top: 52px; } .handNote { left: -42px; top: -48px; } .handArrow { left: -20px; top: -46px; width: 58px; } .homeOverview, .homeAbout { padding: 36px 22px; } }
 
-/* Opening title is its own intro scene, before the original illustrated sequence. */
+/* Opening title own intro scene */
 .introOpening { position: absolute; inset: 0; display: grid; place-items: center; padding: 28px; text-align: center; opacity: 0; visibility: hidden; transition: opacity .7s ease, visibility .7s; }
 .introOpening h1 { max-width: 950px; font-size: clamp(38px, 6vw, 78px); line-height: 1.08; letter-spacing: -.05em; }
+
 .introStage0 .introOpening { opacity: 1; visibility: visible; }
 .introStage0 .humanScene { opacity: 0; visibility: hidden; }
+
 .introStage1 .humanScene, .introStage2 .cellScene, .introStage3 .sequenceScene, .introStage4 .predictionScene, .introStage5 .uncertaintyScene, .introStage6 .foldcheckScene { opacity: 1; visibility: visible; transform: scale(1); }
+
 .intro .introOverline, .intro .introIndex, .introStoryCaption { display: none !important; }
 .homeAction { gap: 12px; align-items: center; }
 @media(max-width:600px) { .homeAction { flex-direction: column; } .homeAction > button { width: 100%; } }
 
 .introStage1 .cellScene, .introStage2 .sequenceScene, .introStage3 .predictionScene, .introStage4 .uncertaintyScene, .introStage5 .foldcheckScene { opacity: 0; visibility: hidden; }
+
 .introStage6 .sequenceScene { opacity: 0; visibility: hidden; }
 
-/* No tiny labels or glowing status indicators in the workspace, thanks. */
+
 .workspacePage .sectionLabel, .workspacePage .viewerEyebrow, .workspacePage .evidencePanelHeader > span, .exploreSection .sectionLabel, .demoViewerHeader { display: none !important; }
 .liveDot { display: none !important; }
-/* About Me reads like an actual story, not fourteen separate text messages. */
+/* About Me reads made less. boring*/
 .aboutPage { max-width: 1050px; padding: 60px 34px 85px; }
+
 .aboutStory { max-width: 980px; margin: 0 auto 28px; }
 .aboutStory p { margin: 0 0 23px; font-size: clamp(16px, 1.45vw, 18px); line-height: 1.8; }
+
 .biologicalFunctionFull { margin: 18px 0 0; padding-left: 24px; }
 .biologicalFunctionFull li { margin: 0 0 12px; line-height: 1.65; color: #d2e1e6; }
+
 @media(max-width:600px) { .aboutPage { padding: 42px 22px 65px; } .aboutStory p { margin-bottom: 20px; } }
 
-/* Keep the homepage buttons together; the note points to Explore. */
+/* Keep the homepage buttons together, note points to Explore. */
 .homeAction { gap: 12px; align-items: center; flex-wrap: wrap; }
+
 .handNote { top: -57px; left: -122px; width: 175px; line-height: 1.35; text-align: center; }
+
 .proteinConfidenceInterpretation ul { margin: 13px 0 0; padding-left: 22px; color: #b8cbd2; font-size: 14px; line-height: 1.75; }
 .proteinConfidenceInterpretation li { margin: 0 0 9px; padding-left: 3px; }
+
 @media (max-width: 600px) {
+
   .homeAction { gap: 10px; }
+
   .handNote { left: -15px; top: -70px; width: 185px; font-size: 12px; }
 }
 
-/* The note has its own space above the buttons so it won't sit on the description. */
+
 .newHomeHero .homeAction { margin-top: 88px; }
-.newHomeHero .handNote { font-family: inherit; font-style: normal; font-weight: 500; transform: none; top: -62px; left: 0; width: 260px; text-align: left; white-space: normal; font-size: 13px; line-height: 1.45; }
-.newHomeHero .handArrow { top: -47px; left: 185px; width: 70px; height: 45px; transform: rotate(9deg); }
+/* arrow points at Explore now (not Replay), so the note moved left to make room */
+.newHomeHero .handNote { font-family: inherit; font-style: normal; font-weight: 500; transform: none; top: -62px; left: -115px; width: 260px; text-align: left; white-space: normal; font-size: 13px; line-height: 1.45; }
+.newHomeHero .handArrow { top: -47px; left: 58px; width: 70px; height: 45px; transform: rotate(9deg); }
+
 @media (max-width: 600px) {
   .newHomeHero .homeAction { margin-top: 105px; }
   .newHomeHero .handNote { top: -80px; left: 0; width: 215px; }
-  .newHomeHero .handArrow { top: -57px; left: 145px; }
+  .newHomeHero .handArrow { top: -57px; left: 58px; }
 }
 
 
-/* Keep the little pointer aimed at the Explore button, not the replay button. */
-.newHomeHero .homeAction { margin-top: 82px; }
-.newHomeHero .handNote { top: -60px; left: 0; width: 270px; }
-.newHomeHero .handArrow { top: -46px; left: 95px; width: 72px; height: 52px; transform: rotate(0deg); pointer-events: none; }
-@media (max-width: 600px) {
-  .newHomeHero .homeAction { margin-top: 100px; }
-  .newHomeHero .handNote { top: -78px; left: 0; }
-  .newHomeHero .handArrow { top: -57px; left: 90px; }
-}
+.homeAction .primaryButton { border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.035); color: #dce5ec; }
+.homeAction .primaryButton:hover { background: rgba(255, 255, 255, 0.07); }
 
-/* Sources: just the links, no giant bibliography. */
-.sourcesPage { max-width: 850px; margin: 0 auto; padding: 55px 28px 90px; }
-.sourcesPage h1 { font-size: clamp(40px, 5vw, 62px); margin: 24px 0 14px; }
-.sourcesPage > p { color: #b8cbd2; line-height: 1.65; margin-bottom: 30px; }
-.sourcesLinks { display: grid; gap: 12px; }
-.sourcesLinks a { display: block; padding: 18px 20px; border: 1px solid #29414d; border-radius: 12px; color: #78d5ce; text-decoration: none; background: #0d171d; }
-.sourcesLinks a:hover { border-color: #78d5ce; background: #11232a; }
+/* Final intro scene is just heading;stretch to fit on two lines */
+.foldcheckScene .introCopy { max-width: none; }
+.foldcheckScene h1 { max-width: none; font-size: clamp(24px, 4.2vw, 62px); line-height: 1.12; }
