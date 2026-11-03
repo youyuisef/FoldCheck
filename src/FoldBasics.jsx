@@ -1,5 +1,3 @@
-
-
 import { useEffect, useRef, useState } from "react";
 import "./FoldStyle.css";
 import ProteinViewer from "./ProteinViewer";
@@ -314,11 +312,11 @@ function FoldCheckNav({ activePage, setActivePage }) {
   <button className="navTextButton" onClick={() => setActivePage("basics")}>
     Basics
   </button>
+  <button className="navTextButton" onClick={() => setActivePage("limitations")}>
+    Limitations
+  </button>
   <button className="navTextButton" onClick={() => setActivePage("about")}>
     About Me
-  </button>
-  <button className="navTextButton" onClick={() => setActivePage("sources")}>
-    Sources
   </button>
 </div>
 
@@ -349,7 +347,7 @@ const ONE_TO_THREE = {
 };
 
 function FoldBasics() {
-  // These coordinates come from the actual loaded structures, not a sample protein.
+  //  coordinates  from the  loaded structures, not a sample.
   const [geometryResidues, setGeometryResidues] = useState([]);
   const [experimentalResidues, setExperimentalResidues] = useState([]);
   const [linkedSelection, setLinkedSelection] = useState(null);
@@ -1012,19 +1010,50 @@ const atomLocation = !selectedAtomName
 const specificAtomInfo =
   atomChemistry[selectedResidue?.residueCode]?.[selectedAtomName] || null;
 
+// second letter of a side chain atom name counts outward from the alpha carbon
+const sideChainPositions = { B: "beta", G: "gamma", D: "delta", E: "epsilon", Z: "zeta", H: "eta" };
+const atomPosition = sideChainPositions[selectedAtomName.charAt(1)] || null;
+
+const atomResidueName =
+  aminoAcids[selectedResidue?.residueCode]?.name ||
+  selectedResidue?.residueCode ||
+  "this residue";
+
+const atomElementNote =
+  atomElement === "Carbon"
+    ? "Side-chain carbons make up the carbon skeleton of the residue. Carbons bonded only to other carbons and hydrogens are usually nonpolar, while carbons next to nitrogen or oxygen are partly polarised."
+    : atomElement === "Nitrogen"
+      ? "Side-chain nitrogens sit in groups such as amines, amides and rings. Depending on the group, they can carry a charge or take part in hydrogen bonds."
+      : atomElement === "Oxygen"
+        ? "Side-chain oxygens sit in groups such as hydroxyls, carboxylates and amides, and can often accept hydrogen bonds."
+        : atomElement === "Sulfur"
+          ? "Sulfur only appears in the side chains of cysteine and methionine. In cysteine it can sometimes form a disulfide bond with another cysteine."
+          : atomElement === "Hydrogen"
+            ? "A hydrogen is bonded to a heavier atom. Hydrogens on nitrogen or oxygen can act as hydrogen bond donors."
+            : "";
+
+// plddt of the clicked residue, for the atom text
+const atomPlddt = typeof selectedResidue?.plddt === "number" ? selectedResidue.plddt : null;
+
 const atomRole = !selectedAtomName
   ? null
   : selectedAtomName === "N"
-    ? "This backbone nitrogen is part of the peptide chain and can participate in hydrogen bonding."
+    ? (Number(selectedResidue?.residueNumber) === 1
+        ? "As the first residue, this nitrogen is the free amino end (N-terminus) of the chain, so it is not bonded to a previous residue."
+        : selectedResidue?.residueCode === "PRO"
+          ? "This backbone nitrogen forms the peptide bond to the carbonyl carbon of the previous residue. Proline's nitrogen has no hydrogen because it is part of the side-chain ring, so unlike most residues it can't donate a hydrogen bond."
+          : "This backbone nitrogen forms the peptide bond to the carbonyl carbon of the previous residue. Its N–H group can donate a hydrogen bond in secondary structures such as helices and sheets.")
     : selectedAtomName === "CA"
-      ? "The alpha carbon connects the backbone to the amino acid's side chain. It is a key reference point for protein geometry."
+      ? `The alpha carbon is the central carbon of ${atomResidueName}. It is bonded to the backbone nitrogen, the carbonyl carbon and the side chain (glycine only has a hydrogen here). Alpha carbon positions are the reference points FoldCheck uses for the RMSD comparison.`
       : selectedAtomName === "C"
-        ? "This backbone carbon is part of the peptide group and is bonded to the carbonyl oxygen."
+        ? "This is the carbonyl carbon of the backbone. It is double bonded to the backbone oxygen and forms the peptide bond to the nitrogen of the next residue."
         : selectedAtomName === "O"
-          ? "This backbone oxygen is part of a carbonyl group and can accept hydrogen bonds."
-          : backboneAtoms.includes(selectedAtomName)
-            ? "This atom belongs to the protein backbone."
-            : "This atom belongs to the amino acid's side chain. Its chemical role depends on the residue and its molecular environment.";
+          ? "This is the carbonyl oxygen of the backbone. It can accept hydrogen bonds, which helps hold helices and sheets together."
+          : selectedAtomName === "OXT"
+            ? "OXT is the extra oxygen at the carboxyl end (C-terminus) of the chain, so it only appears on the last residue."
+            : backboneAtoms.includes(selectedAtomName)
+              ? "This atom belongs to the protein backbone."
+              : `${selectedAtomName} belongs to the side chain of ${atomResidueName}${atomPosition ? `, at the ${atomPosition} position counted outward from the alpha carbon` : ""}. ${atomElementNote} ${atomPlddt !== null ? `Residue ${selectedResidue.residueNumber} has a pLDDT of ${atomPlddt.toFixed(1)}, ${atomPlddt >= 90 ? "so this atom sits in a confidently predicted stretch" : atomPlddt >= 70 ? "so this stretch is predicted fairly confidently" : atomPlddt >= 50 ? "so this atom's position is uncertain" : "so this atom's position is very uncertain"}. pLDDT is scored on the backbone, so side-chain atoms are less certain than that number suggests. ` : ""}This page doesn't measure whether the atom makes a hydrogen bond or forms a salt bridge.`;
 
 useEffect(() => {
   const controller = new AbortController();
@@ -1220,7 +1249,7 @@ description: [
 
   const residuePosition = Number(selectedResidue?.residueNumber);
 
-  // No hardcoded p53 stuff here. Use whatever UniProt knows about the loaded protein.
+  // No hardcode for p53 stuff, link stuff about selectedprotein.
   const matchingResidueRegions = Number.isInteger(residuePosition)
     ? (proteinInfo?.regions || []).filter((region) =>
         region.type !== "Chain" &&
@@ -1235,12 +1264,122 @@ description: [
       ? selectedPlddt - proteinConfidence.mean
       : null;
 
-  // Residue labels still need amino-acid names; detailed chemistry stays separate.
+  // show amino acids here
   const selectedAminoAcid = selectedResidue
     ? aminoAcids[selectedResidue.residueCode]
     : null;
 
-  // Give each part of the story time to play before moving to the next.
+  // where the residue sits + what kind of amino acid it is, only uses data we actually loaded
+  const residueContextText =
+    selectedResidue && selectedAminoAcid && proteinInfo?.length && Number.isInteger(residuePosition)
+      ? `${selectedAminoAcid.name} is classed as ${selectedAminoAcid.category.toLowerCase()} (${selectedAminoAcid.waterAffinity.toLowerCase()}). Residue ${residuePosition} is about ${Math.ceil((residuePosition / proteinInfo.length) * 100)}% of the way along the ${proteinInfo.length}-residue sequence${residuePosition <= 20 || residuePosition > proteinInfo.length - 20 ? ", close to one end of the chain, where flexible stretches can be more common" : ""}. What it actually does depends on its neighbours in the folded structure, which the score alone does not tell us.`
+      : "";
+
+  // stuff for the new residue / region text. all of it comes from data we already loaded, nothing hardcoded
+  const evidenceLabel = (region) => {
+    const code = region?.evidence?.[0]?.evidenceCode;
+    return code === "ECO:0000269" ? "experimental evidence in a publication"
+      : code === "ECO:0000305" ? "curator inference"
+      : code === "ECO:0000250" ? "similarity to another protein"
+      : "";
+  };
+
+  // uniprot writes pdb chains like "A/B=94-312" so this just checks if any chain covers a range
+  const pdbCoverCount = (start, end) => experimentalStructures.filter((structure) =>
+    String(structure.chains || "").split(",").some((part) => {
+      const range = part.match(/=\s*(\d+)\s*-\s*(\d+)/);
+      return range && Number(range[1]) <= start && Number(range[2]) >= end;
+    })
+  ).length;
+
+ const residueBandShare =
+    selectedPlddt !== null && proteinConfidence
+      ? ((selectedPlddt >= 90 ? proteinConfidence.veryHigh : selectedPlddt >= 70 ? proteinConfidence.confident : selectedPlddt >= 50 ? proteinConfidence.low : proteinConfidence.veryLow) / proteinConfidence.residueCount) * 100
+      : null;
+
+  const veryHighShare = proteinConfidence ? (proteinConfidence.veryHigh / proteinConfidence.residueCount) * 100 : 0;
+  const veryLowShare = proteinConfidence ? (proteinConfidence.veryLow / proteinConfidence.residueCount) * 100 : 0;
+
+  const residueChemistry = AMINO_CHEMISTRY[selectedResidue?.residueCode];
+  const residueSize = residueChemistry ? residueChemistry[2].split(";")[0].toLowerCase() : "";
+  const residueTraits = residueChemistry
+    ? `a ${residueSize === "medium" ? "medium-sized" : residueSize} ${residueChemistry[0].toLowerCase()} residue`
+    : "an amino acid residue";
+
+  const residueWhereText =
+    Number.isInteger(residuePosition) && proteinInfo?.length
+      ? `, about ${Math.ceil((residuePosition / proteinInfo.length) * 100)}% of the way along the ${proteinInfo.length}-residue chain${residuePosition <= 20 || residuePosition > proteinInfo.length - 20 ? " (close to one end, where flexible stretches can be more common)" : ""}`
+      : "";
+
+  const residueDisordered = matchingResidueRegions.some((region) => region.name.toLowerCase().includes("disordered"));
+
+  // pLDDT of the 5 residues either side, only there once the geometry has loaded
+  const residueNeighbours = Number.isInteger(residuePosition)
+    ? geometryResidues.filter((item) => typeof item.plddt === "number" && Math.abs(item.number - residuePosition) <= 5)
+    : [];
+  const residueNeighbourText = residueNeighbours.length > 1
+    ? ` (their pLDDT runs from ${Math.min(...residueNeighbours.map((item) => item.plddt)).toFixed(1)} to ${Math.max(...residueNeighbours.map((item) => item.plddt)).toFixed(1)}, averaging ${(residueNeighbours.reduce((sum, item) => sum + item.plddt, 0) / residueNeighbours.length).toFixed(1)})`
+    : "";
+
+  const residuePdbText = Number.isInteger(residuePosition)
+    ? experimentalStructures.length === 0
+      ? "UniProt lists no PDB entries for this protein."
+      : pdbCoverCount(residuePosition, residuePosition) > 0
+        ? `UniProt lists ${experimentalStructures.length} PDB ${experimentalStructures.length === 1 ? "entry" : "entries"}, and ${pdbCoverCount(residuePosition, residuePosition)} of them ${pdbCoverCount(residuePosition, residuePosition) === 1 ? "reports" : "report"} a chain covering residue ${residuePosition}, so the Experimental Comparison page can show how an experimental structure compares here.`
+        : `UniProt lists ${experimentalStructures.length} PDB ${experimentalStructures.length === 1 ? "entry" : "entries"}, but none report a chain covering residue ${residuePosition}, so the Experimental Comparison page may have nothing to compare here.`
+    : "";
+
+  // disordered bits from uniprot, merged so overlapping ones dont get counted twice (took me a while)
+  const disorderedRegions = (proteinInfo?.regions || []).filter((region) =>
+    region.name?.toLowerCase().includes("disordered") && region.start != null && region.end != null
+  );
+  const disorderedResidueCount = (() => {
+    const covered = new Set();
+    disorderedRegions.forEach((region) => {
+      for (let i = Number(region.start); i <= Number(region.end); i++) covered.add(i);
+    });
+    return covered.size;
+  })();
+
+  const regionFacts = (() => {
+    const start = Number(selectedRegion?.start);
+    const end = Number(selectedRegion?.end);
+    if (!selectedRegion || !Number.isFinite(start) || !Number.isFinite(end)) return [];
+
+    const facts = [];
+    const others = (proteinInfo?.regions || []).filter((region) =>
+      region.type !== "Chain" &&
+      !(region.name === selectedRegion.name && region.start === selectedRegion.start && region.end === selectedRegion.end) &&
+      Number(region.start) <= end && Number(region.end) >= start
+    );
+
+    facts.push(
+      others.length
+        ? `Overlaps with ${others.length} other annotated ${others.length === 1 ? "feature" : "features"}, including ${others.slice(0, 3).map((region) => region.name).join(", ")}.`
+        : "No other annotated feature overlaps this one."
+    );
+
+    if (proteinInfo?.length && !selectedRegion.name.toLowerCase().includes("disordered")) {
+      facts[0] += ` This region makes up ${Math.max(1, Math.round(((end - start + 1) / proteinInfo.length) * 100))}% of the ${proteinInfo.length}-residue sequence.`;
+    }
+
+    const scores = geometryResidues
+      .filter((item) => typeof item.plddt === "number" && item.number >= start && item.number <= end)
+      .map((item) => item.plddt);
+    if (scores.length) {
+      facts.push(`AlphaFold's pLDDT across this region averages ${(scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)} (lowest ${Math.min(...scores).toFixed(1)}, highest ${Math.max(...scores).toFixed(1)})${proteinConfidence ? `, compared with ${proteinConfidence.mean.toFixed(1)} for the whole protein` : ""}.`);
+    }
+
+    if (experimentalStructures.length) {
+      const covering = pdbCoverCount(start, end);
+      facts.push(`${covering === 0 ? "None" : covering} of the ${experimentalStructures.length} PDB ${experimentalStructures.length === 1 ? "entry" : "entries"} listed in UniProt ${covering === 1 ? "reports" : "report"} a chain covering this whole region.`);
+    }
+
+    return facts;
+  })();
+
+  // if someone sees this can i have a free esp32 :)
+  // wait before next slide
   useEffect(() => {
     if (!showIntro) return;
 
@@ -1718,17 +1857,6 @@ if (activePage === "confidence") {
       ))}
     </div>
 
-    <p
-      style={{
-        marginTop: "22px",
-        color: "#9fb8c7",
-        fontSize: "13px"
-      }}
-    >
-      These statistics describe AlphaFold's predicted relative-position
-      uncertainty. They are not experimental accuracy measurements.
-      Nearby residues are included and can contribute lower PAE values.
-    </p>
   </section>
 )}
 
@@ -1833,11 +1961,6 @@ className="paeSection"
           : "This residue pair has predicted relative-position uncertainty equal to the protein average."}
     </p>
 
-    <p style={{ color: "#9fb8c7", fontSize: "13px" }}>
-      This comparison is descriptive. Being below the protein average
-      does not necessarily mean the pair has low absolute PAE or that
-      its structure has been experimentally validated.
-    </p>
   </div>
 )}
 
@@ -1976,9 +2099,7 @@ className="paeSection"
       }}
     >
       Biological region information comes from UniProt sequence
-      annotations. PAE describes predicted relative-position
-      uncertainty; it does not directly measure physical distance,
-      molecular interactions, or biological function.
+      annotations.
     </p>
   </div>
 )}
@@ -2067,11 +2188,6 @@ className="paeSection"
             understanding of an AlphaFold prediction.
           </p>
 
-          <p style={{ color: "#9fb8c7", fontSize: "13px" }}>
-            Scientific limitation: PAE is a prediction of structural
-            uncertainty, not a measured physical distance between
-            residues or direct experimental evidence of accuracy.
-          </p>
         </section>
       </main>
     </div>
@@ -2507,13 +2623,6 @@ if (activePage === "experimental") {
               </section>
             </div>
 
-            <p style={{ color: "#9fb8c7", fontSize: "13px" }}>
-              This viewer displays the experimentally determined
-              PDB entry. The two structures are not yet
-              superimposed, so their visual orientations cannot
-              be used to measure structural agreement.
-            </p>
-
             <a
               href={`https://www.rcsb.org/structure/${encodeURIComponent(structure.id)}`}
               target="_blank"
@@ -2583,11 +2692,6 @@ if (activePage === "experimental") {
         <strong>{rmsdCoordinates.length}</strong> matched Cα atom pairs.
       </p>
 
-      <p style={{ color: "#9fb8c7", fontSize: "13px" }}>
-        Preliminary result. Sequence correspondence, experimental chain
-        selection, and numerical validation must be checked before
-        interpreting this value as structural agreement.
-      </p>
     </>
   ) : (
     <p>
@@ -2638,24 +2742,31 @@ if (activePage === "experimental") {
   </h3>
 
   <p>
-    Comparing predicted and experimentally determined structures
-    can help investigate whether a prediction agrees with observed
-    molecular conformations. However, this page currently displays
-    the structures separately.
+    {alignedRMSD !== null && Number.isFinite(alignedRMSD)
+      ? `Chain ${selectedExperimentalChain} of PDB ${structure.id} was matched to the AlphaFold model by sequence, giving ${rmsdCoordinates.length} Cα atom pairs. After optimal superposition the backbone RMSD is ${alignedRMSD.toFixed(2)} Å. ${alignedRMSD < 2 ? "As a rough guide, a value this low means the matched backbone atoms overlap closely, so the predicted fold agrees well with this experimental chain over the residues that could be matched." : alignedRMSD < 4 ? "As a rough guide, a value in this range means the overall fold is broadly similar, but parts of the backbone, such as loops or the arrangement of domains, sit noticeably differently." : "As a rough guide, a value this high means the backbones differ substantially over the matched residues, so the prediction and this experimental structure do not agree well overall."}`
+      : "An RMSD could not be calculated for this pair because fewer than three matched residues with valid Cα coordinates were found, so this page cannot say how well the two structures agree."}
   </p>
 
   <p>
-    A quantitative structural comparison requires matching
-    corresponding residues, aligning their atomic coordinates,
-    and calculating a measure such as backbone RMSD.
-    Different experimental conditions, missing residues,
-    and molecular interactions can also affect the comparison.
+    {matchedResidues.length > 0 && experimentalSequence.length > 0
+      ? `The comparison only covers ${matchedResidues.length} of the ${experimentalSequence.length} residues in the selected PDB chain (${((matchedResidues.length / experimentalSequence.length) * 100).toFixed(1)}%). Residues that appear in only one of the two structures cannot be compared, and an RMSD is an average over the matched atoms, so a few poorly matching regions, such as a flexible loop, can raise it even when most of the fold agrees.`
+      : "No residues could be matched between the two structures, so there is nothing to compare yet."}
   </p>
 
-  <p style={{ color: "#9fb8c7", fontSize: "13px" }}>
-    Scientific limitation: A high AlphaFold confidence score
-    does not guarantee agreement with a particular experimental
-    structure. An aligned Cα RMSD is calculated when enough matching residues are available; the two 3D viewers are not visually superimposed.
+  <p>
+    {Number.isFinite(parseFloat(structure.resolution))
+      ? `This experimental entry is reported at ${structure.resolution} resolution (${structure.method}). ${parseFloat(structure.resolution) >= 3 ? "That is fairly low resolution, so fine details such as side-chain positions are less certain and small differences from the prediction should not be over-interpreted." : "At this resolution the backbone is usually well defined, although flexible regions can still be poorly resolved."}`
+      : `The resolution of this experimental entry is not specified (${structure.method}), so how precisely its atoms are placed cannot be judged here.`}
+  </p>
+
+  <p>
+    Even a low RMSD only shows that the matched backbone atoms sit in
+    similar positions in this one experimental structure. It does not
+    show that the prediction is experimentally validated, that the side
+    chains or interactions are correct, or that the protein works the way
+    the model suggests. The entry may also capture only part of the
+    protein, or one state of it, so a large difference does not prove the
+    prediction wrong either.
   </p>
 </div>
           </div>
@@ -2669,18 +2780,22 @@ if (activePage === "experimental") {
 }
 
 if (activePage === "basics") {
-  // Keep these explanations separate from the live UniProt annotations below.
-  // They explain the science in general, not a claim about the loaded protein.
+  // Keep these explanations separate from the live UniProt annotations.
+  // explanation the science-not the loaded protein.
   const topics = [
     ["Amino acids", "Proteins are built from 20 commonly used amino acids. Each has an amino group, carboxyl group and a side chain that affects its chemical behaviour."],
+    ["Alpha carbon (Cα)", "The central carbon of each amino acid, bonded to the backbone nitrogen, the carbonyl carbon, a hydrogen and the side chain. FoldCheck uses one Cα per residue as that residue's position when it compares structures."],
     ["Alpha helices", "A common secondary structure where the backbone coils into a helix. Hydrogen bonds between backbone groups help stabilise it."],
     ["AlphaFold model", "AlphaFold predicts a possible 3D protein structure using AI. A prediction is not direct experimental proof, and proteins can move or change shape."],
+    ["Backbone", "The repeating N–Cα–C chain running through every residue, with the carbonyl oxygen attached. Side chains hang off it, and phi and psi angles describe how it twists."],
     ["Beta sheets", "A secondary structure formed when extended stretches of the protein backbone align and form hydrogen bonds."],
+    ["Chains", "In a structure file, each polypeptide gets a letter (chain A, B…). Experimental entries often hold several copies or partners, so FoldCheck picks the chain that best matches the AlphaFold sequence before comparing."],
     ["Confidence scores", "A confidence score indicates how reliable a model is expected to be in a particular respect. It is not the probability that the whole protein is correct."],
     ["Disordered regions", "Some regions do not settle into one stable 3D shape. Low model confidence can reflect genuine flexibility or disorder, not necessarily a modelling failure."],
     ["Disulfide bonds", "Covalent links between cysteine side chains that can help stabilise a protein, especially outside cells."],
     ["Domains", "A domain is a section of a protein that can fold into a distinct structural unit and often carries a particular function."],
     ["Enzymes", "Proteins that speed up chemical reactions by lowering activation energy. Their active sites bind substrates and help reactions happen."],
+    ["Evidence codes", "UniProt tags each annotation with how it's supported: experimental evidence in a publication, a curator's inference, or similarity to another protein. The Region Explorer shows these, and experimental evidence is usually the strongest."],
     ["Experimental structures", "Scientists determine structures using methods such as X-ray crystallography, cryo-electron microscopy and NMR. Experimental models also have limitations and may only show part of a protein."],
     ["Folding", "The process by which an amino-acid chain adopts its three-dimensional shape. The sequence, environment and sometimes helper proteins influence folding."],
     ["Hydrogen bonds", "Attractions involving hydrogen and electronegative atoms. Many hydrogen bonds help stabilise alpha helices, beta sheets and other protein interactions."],
@@ -2691,15 +2806,23 @@ if (activePage === "basics") {
     ["Mutations", "Changes in DNA can alter a protein sequence or how much protein is produced. Effects range from harmless to important, depending on the change and context."],
     ["Organelles and localisation", "Where a protein works matters. Proteins may function in the nucleus, cytoplasm, mitochondria, membranes or other compartments, and some move between locations."],
     ["PAE", "Predicted aligned error estimates uncertainty in the relative positions of residues or domains. It helps assess whether the arrangement of two regions is reliable."],
+    ["PDB", "The Protein Data Bank, an archive of experimentally determined structures. Each entry has a four-character ID, like 1CRN, the demo structure on the homepage. UniProt links proteins to their PDB entries."],
     ["Peptide bonds", "Covalent bonds linking amino acids into a polypeptide chain. They form between the carboxyl group of one amino acid and the amino group of another."],
+    ["Phi and psi angles", "Two rotations per residue along the backbone: phi (φ) around the N–Cα bond and psi (ψ) around the Cα–C bond. Together they set the local shape. The first residue has no phi and the last has no psi, which is why the geometry table shows N/A at chain ends."],
     ["pLDDT", "AlphaFold’s local confidence score, from 0 to 100. Above 90 is very high confidence; 70–90 confident; 50–70 low; and below 50 very low."],
     ["Primary structure", "The order of amino acids in a protein, usually written from the N-terminus to the C-terminus. This sequence influences how the protein folds."],
     ["Protein function", "A protein’s job may include catalysing reactions, carrying molecules, providing structure, sending signals or regulating genes. Structure helps, but does not alone prove function."],
     ["Quaternary structure", "The arrangement of multiple protein chains into one functional complex. Many proteins work as single chains and do not have quaternary structure."],
+    ["Ramachandran plot", "A scatter plot of each residue's phi (across) against psi (up). Helix residues cluster near φ ≈ −60°, ψ ≈ −45°, and strand residues near φ ≈ −120°, ψ ≈ +130°, because most other combinations make atoms clash. Glycine is more flexible and proline more restricted. FoldCheck draws the points but doesn't yet mark favoured or outlier zones."],
     ["Residues", "An amino acid is called a residue once incorporated into a protein chain. Residue numbers help locate positions in sequences and structures."],
+    ["Resolution", "How finely an experimental structure is measured, in Å. Smaller is sharper. Around 2 Å or better, side chains are usually clear, and around 3 Å or worse their positions are less certain. NMR entries usually have no resolution value."],
+    ["RMSD", "Root-mean-square deviation, the typical distance between matching atoms in two structures after they've been optimally rotated and shifted onto each other. FoldCheck uses Cα atoms and shows it in Å. Lower means closer, but it's an average, so one floppy loop can raise it a lot."],
     ["Secondary structure", "Local patterns of the protein backbone, especially alpha helices and beta sheets, stabilised largely by hydrogen bonds."],
     ["Sequence alignment", "A method of matching amino-acid positions between sequences or structures. It helps compare related proteins and identify substitutions or missing regions."],
     ["Side chains", "The variable parts of amino acids. Their size, charge and polarity affect interactions and protein behaviour."],
+    ["Signal peptides", "A short stretch at the start of some proteins that directs them to the secretory pathway or certain compartments, and is usually cut off afterwards. UniProt marks these as \"Signal\", so the mature protein may lack those first residues."],
+    ["Superposition", "Rotating and shifting one structure to sit as closely as possible over another, so the remaining differences aren't just orientation. FoldCheck does this mathematically before calculating RMSD. The two 3D viewers on screen aren't superimposed."],
+    ["Termini", "The two ends of a chain. The N-terminus has a free amino group and the C-terminus a free carboxyl group, which is where the extra OXT oxygen in the Atom Explorer comes from. Residues are numbered from N to C."],
     ["Tertiary structure", "The overall three-dimensional arrangement of one protein chain, held together by many interactions including hydrophobic packing, hydrogen bonds and sometimes disulfide bonds."],
     ["UniProt", "A database of protein sequences and biological annotations. Its descriptions and region information are distinct from AlphaFold’s predicted coordinates."]
   ];
@@ -2763,20 +2886,34 @@ if (activePage === "basics") {
   );
 }
 
-if (activePage === "sources") {
+if (activePage === "limitations") {
+  // All the scientific caveats live here now instead of being repeated on every page.
+  const limitations = [
+    ["AlphaFold confidence (pLDDT)", "pLDDT is AlphaFold's own estimate of its confidence in the local structure around a residue. It isn't a measured accuracy. A high score doesn't guarantee correct side chains or interactions, and a low score doesn't prove disorder."],
+    ["Predicted aligned error (PAE)", "PAE is AlphaFold's predicted uncertainty in the relative position of two residues, in Å. It isn't a measured distance or experimental evidence. The protein-wide averages include lots of neighbouring pairs, which pull them down, so being below the average doesn't mean a pair is well predicted."],
+    ["Predicted structures", "An AlphaFold model is one predicted shape, not an observation. Real proteins move and work with partners or ligands that the model may not show."],
+    ["Residue-level interpretation", "A residue's pLDDT says how much AlphaFold trusts the local prediction, not whether the residue is important. What a residue does depends on its neighbours in 3D, so don't read exact contacts from low-confidence regions or claim a binding site from pLDDT."],
+    ["Atom-level interpretation", "Atom explanations describe the element and where the atom sits in the amino acid. They don't show that a particular hydrogen bond or charge interaction happens here, and atom positions are shakier where pLDDT is low."],
+    ["Functional region annotations", "Regions come from UniProt annotations. They describe biology but don't verify binding or the accuracy of the displayed coordinates. No annotation doesn't mean no function, and the evidence can be experimental, a curator's inference or similarity to another protein."],
+    ["Experimental structure comparisons", "A PDB entry may cover only part of the protein, include other molecules, and reflects its own experimental conditions. The two viewers aren't superimposed on screen. FoldCheck matches residues by sequence and calculates a Cα RMSD, but check the chain and matching before treating it as proof of agreement. A low RMSD doesn't validate the prediction, and a high one doesn't disprove it."]
+  ];
+
   return (
     <div className="app">
       <FoldCheckNav activePage={activePage} setActivePage={setActivePage} />
-      <main className="sourcesPage">
-        <button className="aboutBack" onClick={() => setActivePage("home")}>← Back to home</button>
-        <h1>Sources</h1>
-        <p>Here's where FoldCheck gets its protein information and the tools it uses.</p>
-        <div className="sourcesLinks">
-          <a href="https://www.uniprot.org/" target="_blank" rel="noopener noreferrer">UniProt ↗</a>
-          <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="noopener noreferrer">AlphaFold Protein Structure Database ↗</a>
-          <a href="https://www.rcsb.org/" target="_blank" rel="noopener noreferrer">RCSB Protein Data Bank ↗</a>
-          <a href="https://molstar.org/" target="_blank" rel="noopener noreferrer">Mol* 3D Viewer ↗</a>
-        </div>
+      <main className="workspacePage" style={{ maxWidth: 1050, margin: "0 auto", padding: "40px 24px" }}>
+        <h1>Limitations</h1>
+        <p>What FoldCheck's predictions, confidence scores and comparisons can and cannot tell you.</p>
+
+        <section aria-label="Scientific limitations" style={{ marginTop: 30 }}>
+          {limitations.map(([title, description]) => (
+            <article key={title} style={{ padding: "18px 0", borderBottom: "1px solid #29414d" }}>
+              <h2 style={{ margin: "0 0 8px", fontSize: "1.2rem" }}>{title}</h2>
+              <p style={{ margin: 0, lineHeight: 1.75 }}>{description}</p>
+            </article>
+          ))}
+        </section>
+
       </main>
     </div>
   );
@@ -2891,8 +3028,8 @@ if (activePage === "workspace") {
   {proteinInfo.function.length > 280 && (
     <ul className="biologicalFunctionFull">
   {proteinInfo.function
-    .split(/(?<=[.!?])\s+(?=[A-Z])/)
-    .filter((sentence) => sentence.trim().length > 12)
+    .split(/(?<=[.!?;])\s+|;\s*/)
+    .filter((sentence) => sentence.trim().length > 0)
     .map((sentence, index) => (
       <li key={index}>{sentence.trim()}</li>
     ))}
@@ -3158,9 +3295,6 @@ selectedRegion={selectedRegion}
               <div className="proteinConfidenceSummary">
                 <div className="proteinConfidenceHeader">
                   <div>
-                    <span className="guideLabel">
-                      WHOLE-PROTEIN CONFIDENCE
-                    </span>
                     <h3>Mean predicted local confidence</h3>
                   </div>
 
@@ -3231,42 +3365,25 @@ selectedRegion={selectedRegion}
                     </div>
 
                     <div className="proteinConfidenceInterpretation">
-                      <h4>What does this tell us about {proteinInfo?.name || activeProteinId}?</h4>
+                      <h4>What does this tell us about this protein?</h4>
                       <p>
-                        In this model of {proteinInfo?.name || activeProteinId}, AlphaFold scores
-                        {proteinConfidence.residueCount} residues and gives a mean pLDDT of
-                        {" "}{proteinConfidence.mean.toFixed(1)}/100. Of those,
-                        {" "}{proteinConfidence.veryHigh} residues
-                        ({((proteinConfidence.veryHigh / proteinConfidence.residueCount) * 100).toFixed(1)}%)
-                        are at least 90, while {proteinConfidence.veryLow}
-                        ({((proteinConfidence.veryLow / proteinConfidence.residueCount) * 100).toFixed(1)}%)
-                        are below 50. So the mean alone hides substantial differences between
-                        regions of this particular model.
+                        This model scores {proteinConfidence.residueCount} residues with a mean pLDDT of {proteinConfidence.mean.toFixed(1)}.
+                        {" "}{proteinConfidence.veryHigh} of them ({veryHighShare.toFixed(1)}%) score 90 or above and {proteinConfidence.veryLow} ({veryLowShare.toFixed(1)}%) score below 50,
+                        {veryHighShare >= 15 && veryLowShare >= 15
+                          ? " so the mean hides a big gap between its best- and worst-predicted parts."
+                          : " so the mean is only a rough summary of how the scores are spread."}
                       </p>
-                      <h4>Where should you be cautious?</h4>
+                      <h4>Why might its confidence vary?</h4>
                       <p>
-                        {proteinConfidence.veryLow > proteinConfidence.veryHigh
-                          ? `For ${proteinInfo?.name || activeProteinId}, very-low-confidence residues outnumber very-high-confidence ones. Large parts of this prediction may be unsuitable for precise structural claims.`
-                          : `For ${proteinInfo?.name || activeProteinId}, very-high-confidence residues outnumber very-low-confidence ones, but the ${proteinConfidence.veryLow} residues below 50 still need special care.`}
-                        {" "}Low pLDDT can be consistent with flexibility or disorder, but these
-                        numbers alone cannot prove why a region is uncertain.
+                      {disorderedRegions.length
+                        ? `UniProt annotates ${disorderedRegions.length} "Disordered" ${disorderedRegions.length === 1 ? "region" : "regions"}${proteinInfo?.length ? ` covering ${disorderedResidueCount} residues (${Math.round((disorderedResidueCount / proteinInfo.length) * 100)}% of the sequence)` : ""}. Low pLDDT often goes with disorder${veryLowShare >= 10 ? ", and that fits here" : ""}, but the scores alone can't prove why a stretch is uncertain.`
+                        : "UniProt has no disordered-region annotation for this protein, so the data loaded here can't say why some stretches score low."}
                       </p>
-                      <h4>What can you trust more in this model?</h4>
+                      <h4>What should you investigate?</h4>
                       <p>
-                        The {proteinConfidence.veryHigh} residues scoring at least 90 provide
-                        stronger support for local backbone geometry than the
-                        {" "}{proteinConfidence.veryLow} residues scoring below 50.
-                        That does not make the high-scoring regions experimentally verified,
-                        and it does not establish how accurately distant parts are arranged
-                        relative to one another.
-                      </p>
-                      <h4>What should you investigate next?</h4>
-                      <p>
-                        In the 3D viewer for {proteinInfo?.name || activeProteinId}, pick one
-                        blue high-confidence region and one orange low-confidence region.
-                        Select residues in each and compare their exact scores and available
-                        UniProt annotations. Then check PAE for uncertainty between regions
-                        and any available experimental structures before drawing conclusions.
+                        Pick a stretch scoring above 90 and one below 50 and compare their shapes in the viewer. Then check the PAE page to see whether the confident parts are also confidently placed relative to each other. {experimentalStructures.length
+                          ? `UniProt lists ${experimentalStructures.length} PDB ${experimentalStructures.length === 1 ? "structure" : "structures"} for this protein, so you can test the prediction on the Experimental Comparison page.`
+                          : "UniProt lists no PDB structures for this protein, so there is no experimental structure to compare against here."}
                       </p>
                     </div>
                   </>
@@ -3342,9 +3459,6 @@ selectedRegion={selectedRegion}
   <>
     {inspectorTab === "residue" && (
       <div className="residueInspector">
-                  <span className="guideLabel">
-                    SELECTED RESIDUE
-                  </span>
 
                   <h3>
                     {selectedAminoAcid?.name ||
@@ -3399,8 +3513,7 @@ selectedRegion={selectedRegion}
                         <p className="inspectorNote">
                           pLDDT estimates AlphaFold's confidence
                           in the predicted local structure around
-                          this residue. It is not a direct
-                          measurement of experimental accuracy.
+                          this residue.
                         </p>
 
                         <div className="confidenceInterpretation">
@@ -3430,52 +3543,34 @@ selectedRegion={selectedRegion}
                             </div>
                           )}
 
-                          <h4>What does this score tell us?</h4>
+                          <h4>What does this score tell us about this residue?</h4>
                           <p>
-                            You're looking at {selectedAminoAcid?.name || selectedResidue.residueCode},
-                            residue {residuePosition} in {proteinInfo?.name || activeProteinId}.
-                            Its pLDDT is {selectedPlddt.toFixed(1)}/100
-                            {confidenceDifference !== null
-                              ? `, ${Math.abs(confidenceDifference).toFixed(1)} points ${confidenceDifference >= 0 ? "above" : "below"} this protein's ${proteinConfidence.mean.toFixed(1)} average.`
-                              : "."}
-                            {" "}{selectedPlddt >= 90
-                              ? "This is a very-high-confidence local prediction, so the backbone around this position is a useful starting point for structural analysis."
+                            Residue {residuePosition} is {/^[aeiou]/i.test(selectedAminoAcid?.name || selectedResidue.residueCode) ? "an" : "a"} {(selectedAminoAcid?.name || selectedResidue.residueCode).toLowerCase()} with a pLDDT of {selectedPlddt.toFixed(1)}, in the {confidenceCategory} band ({selectedPlddt >= 90 ? "90–100" : selectedPlddt >= 70 ? "70–90" : selectedPlddt >= 50 ? "50–70" : "0–50"}).
+                            {confidenceDifference !== null && ` That is ${Math.abs(confidenceDifference).toFixed(1)} points ${confidenceDifference >= 0 ? "above" : "below"} this protein’s mean of ${proteinConfidence.mean.toFixed(1)}${residueBandShare !== null ? `, and ${residueBandShare.toFixed(1)}% of this model’s residues fall in the same band` : ""}.`}
+                            {selectedPlddt >= 90
+                              ? " It means AlphaFold is confident about the local backbone here, not about the side chain or any interaction."
                               : selectedPlddt >= 70
-                                ? "The local backbone is predicted fairly confidently, but fine structural details need more care."
-                                : selectedPlddt >= 50
-                                  ? "The local structure is uncertain, so its precise shape and contacts are not reliable evidence on their own."
-                                  : "The model has very little confidence in this local structure; its displayed coordinates could be misleading."}
+                              ? " AlphaFold is fairly confident about the local backbone, but details like side-chain positions are less certain."
+                              : selectedPlddt >= 50
+                              ? " The local shape is uncertain, so don't read exact distances or contacts here."
+                              : " AlphaFold has very low confidence here. The stretch may be flexible or disordered, but the score alone can't say which."}
                           </p>
 
-                          <h4>What might be going on here?</h4>
+                          <h4>What might explain its confidence?</h4>
                           <p>
+                            {selectedAminoAcid?.name || selectedResidue.residueCode} is {residueTraits}{residueWhereText}.
                             {matchingResidueRegions.length
-                              ? `UniProt places residue ${residuePosition} inside ${matchingResidueRegions.slice(0, 2).map(r => `${r.name} (positions ${r.start}–${r.end})`).join(" and ")}. That gives this position a documented biological context in ${proteinInfo?.name || activeProteinId}, but it doesn't prove the predicted contacts or explain the confidence score.`
-                              : `UniProt doesn't list a matching annotated region at position ${residuePosition} in ${proteinInfo?.name || activeProteinId}. That doesn't mean this position has no role.`}
-                            {" "}{selectedPlddt < 70
-                              ? "Its low score could reflect a mobile or disordered stretch, or simply an uncertain prediction; pLDDT cannot distinguish these possibilities."
-                              : "The score supports a local shape, but cannot tell us whether this residue is rigid, exposed, or involved in an interaction."}
+                              ? ` UniProt places position ${residuePosition} inside ${matchingResidueRegions.length} annotated ${matchingResidueRegions.length === 1 ? "feature" : "features"}, including ${matchingResidueRegions.slice(0, 2).map(region => `${region.name} (residues ${region.start}–${region.end})`).join(" and ")}. Those are sequence annotations${evidenceLabel(matchingResidueRegions[0]) ? ` (the first is backed by ${evidenceLabel(matchingResidueRegions[0])})` : ""}. ${matchingResidueRegions.slice(0, 2).some(region => region.name.toLowerCase().includes("interaction")) ? "They link this stretch to those partners (pLDDT can't show whether a partner actually binds here)." : "They describe the stretch biologically (pLDDT can't confirm any function or binding here)."}`
+                              : ` UniProt has no annotated feature at position ${residuePosition} (that doesn't mean the residue has no function).`}
+                            {residueDisordered && selectedPlddt < 50 && " UniProt annotates this stretch as disordered, which fits the low score."}
+                            {residueDisordered && selectedPlddt >= 90 && " UniProt annotates this stretch as disordered, yet AlphaFold models it confidently. That mismatch is worth treating cautiously."}
                           </p>
 
-                          <h4>Why is this important for this protein?</h4>
+                          <h4>What should you check next?</h4>
                           <p>
-                            {selectedPlddt >= 70
-                              ? `For ${proteinInfo?.name || activeProteinId}, this residue's predicted local position is more suitable for examining nearby structural features than a low-scoring residue would be.`
-                              : `For ${proteinInfo?.name || activeProteinId}, any apparent bond, pocket, or contact involving residue ${residuePosition} needs extra caution because the model is uncertain here.`}
-                            {" "}{matchingResidueRegions.length
-                              ? `Its overlap with ${matchingResidueRegions[0].name} makes this position worth investigating, although the annotation is not experimental validation of this specific AlphaFold geometry.`
-                              : "Without a matching functional annotation, its biological significance cannot be determined from the confidence score alone."}
-                          </p>
-
-                          <h4>What should you investigate next?</h4>
-                          <p>
-                            Inspect the residues directly beside {selectedResidue.residueCode} {residuePosition}
-                            in {proteinInfo?.name || activeProteinId}, then compare their pLDDT values.
-                            {confidenceDifference !== null && confidenceDifference < 0
-                              ? " See whether this lower-scoring position belongs to a longer uncertain stretch rather than being an isolated dip."
-                              : " Check whether the neighbouring positions have similarly strong predictions or whether confidence drops sharply."}
-                            {" "}Use the PAE plot to investigate how reliably this region is positioned
-                            relative to the rest of the protein, and compare experimental structures if available.
+                            Look at residues {Math.max(1, residuePosition - 5)}–{Math.min(proteinInfo?.length || residuePosition + 5, residuePosition + 5)} in the 3D viewer and see whether the colour changes{residueNeighbourText}.
+                            {" "}Then open the PAE page and click the heatmap at residue {residuePosition} on the horizontal axis to see which other regions AlphaFold places confidently relative to it.
+                            {" "}{residuePdbText}
                           </p>
                         </div>
                       </>
@@ -3495,7 +3590,6 @@ selectedRegion={selectedRegion}
 
 {inspectorTab === "region" && !selectedRegion && (
   <div className="residueInspector">
-    <span className="guideLabel">REGION EXPLORER</span>
     <h3>No region selected</h3>
     <p className="residueSubtitle">
       Select a functional region from the protein information
@@ -3506,8 +3600,6 @@ selectedRegion={selectedRegion}
 )}
 {inspectorTab === "region" && selectedRegion && (
   <div className="residueInspector">
-    <span className="guideLabel">SELECTED FUNCTIONAL REGION</span>
-
     <h3>{selectedRegion.name}</h3>
 
 <p className="inspectorNote">
@@ -3559,10 +3651,12 @@ selectedRegion={selectedRegion}
   <></>
 ) : selectedRegion.name.toLowerCase().includes("disordered") ? (
         <p>
-          This region is annotated as disordered, meaning
-          it may not maintain one stable three-dimensional
-          structure. Such regions can remain flexible and
-          participate in important biological interactions.
+          UniProt annotates residues {selectedRegion.start}–{selectedRegion.end} as disordered
+          ({selectedRegion.end - selectedRegion.start + 1} residues{proteinInfo?.length ? `, ${Math.round(((selectedRegion.end - selectedRegion.start + 1) / proteinInfo.length) * 100)}% of the sequence` : ""}).
+          Disordered stretches don't settle into one fixed shape, and AlphaFold
+          usually scores them low and draws them as loose coils, so don't read
+          these coordinates as a true structure. Disordered doesn't mean useless:
+            short binding motifs often sit in these stretches.
         </p>
       ) : (
         <p>
@@ -3591,19 +3685,29 @@ selectedRegion={selectedRegion}
       This signal peptide is a sequence that helps direct
       the protein into the cellular pathway responsible
       for secretion or delivery to certain compartments.
+      {" "}It spans residues {selectedRegion.start}–{selectedRegion.end}
+      {" "}({selectedRegion.end - selectedRegion.start + 1} amino acids) and
+      is usually cleaved off once the protein has been targeted, so it
+      may be missing from the mature protein.
     </p>
   ) : selectedRegion.type === "Chain" ? (
     <p>
       This annotation identifies a protein chain, which
       may represent the mature protein after processing.
+      {proteinInfo?.length && ` Here it spans residues ${selectedRegion.start}–${selectedRegion.end} of the ${proteinInfo.length}-residue sequence${Number(selectedRegion.start) <= 1 && Number(selectedRegion.end) >= proteinInfo.length ? ", so it covers the whole sequence." : ", so part of the original sequence is not included in this chain."}`}
     </p>
   ) : (
     <p>
       UniProt classifies this feature as{" "}
       <strong>{selectedRegion.type || "a functional region"}</strong>.
-      Its annotation describes a sequence feature of the protein.
+      Its annotation describes a sequence feature of the protein
+      that spans residues {selectedRegion.start}–{selectedRegion.end}
+      {" "}({selectedRegion.end - selectedRegion.start + 1} amino acids).
     </p>
   )}
+
+  {/* little facts worked out from stuff already loaded, see regionFacts up top */}
+  {regionFacts.map((fact, index) => <p key={index}>{fact}</p>)}
 
   <RegionDetails
   region={selectedRegion}
@@ -3660,11 +3764,6 @@ selectedRegion={selectedRegion}
   </div>
 ) : null}
 
-  <p className="inspectorNote">
-    UniProt sequence annotations describe biological features.
-    They do not, by themselves, verify molecular binding or
-    the accuracy of the displayed AlphaFold coordinates.
-  </p>
 </div>
 
     <div className="inspectorSection">
@@ -3696,8 +3795,6 @@ selectedRegion={selectedRegion}
 
 {inspectorTab === "atom" && (
   <div className="residueInspector">
-    <span className="guideLabel">SELECTED ATOM</span>
-
     <h3>{selectedAtomName || "No atom selected"}</h3>
 
     <p className="residueSubtitle">
@@ -3787,7 +3884,7 @@ selectedRegion={selectedRegion}
             ))}
           </div>
 
-          {/* From DNA to a predicted structure: one story, without duplicating AmazingAmino’s lessons. */}
+          {/* DNA to protein structure section */}
 
           <div className="introOpening">
             <h1>Let’s show you how proteins are made.</h1>
@@ -3844,11 +3941,9 @@ selectedRegion={selectedRegion}
 
           <div className="introScene foldcheckScene">
             
-            <div className="introStoryVisual"><div className="introStoryCode">FOLDCHECK</div><span className="introStoryCaption">EXPLORE · QUESTION · LEARN</span></div>
             <div className="introCopy">
               
-              <h1>Now explore the evidence with FoldCheck.</h1>
-              <p>Search for a protein, inspect its 3D structure, compare confidence and available experimental information, and decide which regions deserve a closer look.</p>
+              <h1>Now you can explore the evidence...<br />with foldcheck!</h1>
             </div>
           </div>
         </div>
@@ -3861,12 +3956,12 @@ selectedRegion={selectedRegion}
       <main>
         {activePage === "home" && <section className="hero newHomeHero" id="top">
           <div className="heroContent">
-            <h1>Welcome to FoldCheck.</h1>
-            <p className="heroText">Proteins are complicated. Exploring them shouldn't be. Search for a protein, see its predicted 3D structure and find out what the confidence scores actually tell you.</p>
+            <h1>Welcome to... FoldCheck.</h1>
+            <p className="heroText"></p>
             <div className="homeAction">
               <span className="handNote">click here to start or scroll down!</span>
               <svg className="handArrow" viewBox="0 0 110 65" fill="none" aria-hidden="true">
-                <path d="M5 7 C25 8 38 20 48 35 L65 58 M48 56 L65 58 L65 41" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 7 C30 1 54 12 68 30 S81 47 101 46 M85 34 L102 47 L84 57" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <button className="primaryButton" onClick={() => setActivePage("search")}>Explore a protein →</button>
               <button className="secondaryButton" onClick={replayIntro}>Replay intro ↻</button>
@@ -3884,6 +3979,11 @@ selectedRegion={selectedRegion}
               </p>
 
               <h2>Try the 3D viewer</h2>
+
+              <p className="sectionText">
+                Explore a real experimental protein structure
+                before starting your own investigation.
+              </p>
 
               <div className="demoViewer" id="demo">
                 <div className="demoViewerHeader">
