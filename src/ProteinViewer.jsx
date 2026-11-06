@@ -1,47 +1,256 @@
 import { useEffect, useRef, useState } from "react";
 import { Viewer } from "molstar/lib/apps/viewer/app";
 import { lociLabel } from "molstar/lib/mol-theme/label";
-import { StructureElement, StructureProperties } from "molstar/lib/mol-model/structure";
+import {
+  StructureElement,
+  StructureProperties,
+  StructureSelection
+} from "molstar/lib/mol-model/structure";
 import { OrderedSet } from "molstar/lib/mol-data/int";
 import { MolScriptBuilder as MS } from "molstar/lib/mol-script/language/builder";
-import { StructureSelection } from "molstar/lib/mol-model/structure";
 import { StructureQueryHelper } from "molstar/lib/mol-plugin-state/helpers/structure-query";
 import "molstar/build/viewer/molstar.css";
 import { Color } from "molstar/lib/mol-util/color";
 import { ParamDefinition as PD } from "molstar/lib/mol-util/param-definition";
 
-// PAE colours for the selected residue
-const paeThemeParams = {
-  referenceResidue: PD.Numeric(1, { min: 1, max: 10000, step: 1 })
+const spursPaeKnobs = {
+  referenceResidue:PD.Numeric(1,{min:1,max:10000,step:1})
 };
 
-const FoldCheckPAETheme = {
-  name: "foldcheck-pae",
-  label: "FoldCheck PAE",
-  colorThemeCategory: "Custom",
-  factory: (_ctx, props) => ({
-    factory: FoldCheckPAETheme,
-    granularity: "group",
-    color: (location) => {
+const LilywhiteTint = {
+  name:"foldcheck-pae",
+  label:"FoldCheck PAE",
+  colorThemeCategory:"Custom",
+  factory:(_ctx,props)=>({
+    factory:LilywhiteTint,
+    granularity:"group",
+    color:(location)=>{
       if (!StructureElement.Location.is(location)) return Color(0x808080);
+
       const residue = StructureProperties.residue.auth_seq_id(location);
       const reference = Number(props.referenceResidue);
-      const matrix = FoldCheckPAETheme.currentMatrix;
-      const error = matrix?.[reference - 1]?.[residue - 1];
+      const matrix = LilywhiteTint.currentMatrix;
+      const error = matrix?.[reference -1]?.[residue -1];
+
       if (!Number.isFinite(error)) return Color(0x808080);
-      const t = Math.max(0, Math.min(1, error / 30));
-      const r = Math.round(20 + 235 * t);
-      const g = Math.round(100 + 105 * t);
-      const b = Math.round(210 - 170 * t);
+
+      
+      const t = Math.max(0,Math.min(1,error/30));
+      const r = Math.round(20 +235*t);
+      const g = Math.round(100 +105*t);
+      const b = Math.round(210 -170*t);
+
       return Color((r << 16) | (g << 8) | b);
     },
     props,
-    description: "Predicted aligned error relative to the selected reference residue."
+    description:"Predicted aligned error relative to the selected reference residue."
   }),
-  getParams: () => paeThemeParams,
-  defaultValues: PD.getDefaultValues(paeThemeParams),
-  isApplicable: (ctx) => !!ctx.structure,
-  currentMatrix: null
+  getParams:()=>spursPaeKnobs,
+  defaultValues:PD.getDefaultValues(spursPaeKnobs),
+  isApplicable:(ctx)=>!!ctx.structure,
+  currentMatrix:null
+};
+
+const binTheOverlay = (plugin,slot)=>
+  plugin.state.data.build().delete(slot).commit();
+
+const grabFold = (engine)=>
+  engine.plugin.managers.structure.hierarchy.current.structures[0]?.cell?.obj?.data;
+
+const walkTheChain = (foldedStruct,source)=>{
+  const residueRows = [];
+  const byKey = new Map();
+
+  for (const unit of foldedStruct.units) {
+    if (unit.kind!==0) continue; 
+
+    for (const element of unit.elements) {
+      const location = StructureElement.Location.create(
+        foldedStruct,
+        unit,
+        element
+      );
+
+      const number = StructureProperties.residue.auth_seq_id(location);
+      const code = StructureProperties.atom.label_comp_id(location);
+      const chain = StructureProperties.chain.auth_asym_id(location);
+      const key = `${chain}:${number}`;
+
+      const atomName = StructureProperties.atom.label_atom_id(location);
+      const coordinates = [
+        unit.conformation.x(element),
+        unit.conformation.y(element),
+        unit.conformation.z(element)
+      ];
+
+      if (!byKey.has(key)) {
+        const residue = {
+          number,
+          code,
+          chain,
+          atoms:[],
+          plddt:null,
+          backbone:{}
+        };
+
+        byKey.set(key,residue);
+        residueRows.push(residue);
+      }
+
+      const residue = byKey.get(key);
+
+      
+      if (source==="alphafold"&&residue.plddt===null) {
+        const score = StructureProperties.atom.B_iso_or_equiv(location);
+        if (Number.isFinite(score)&&score >= 0&&score <= 100) {
+          residue.plddt = score;
+        }
+      }
+
+      if (!residue.atoms.includes(atomName)) {
+        residue.atoms.push(atomName);
+      }
+
+      if (["N","CA","C"].includes(atomName)) {
+        residue.backbone[atomName] = coordinates;
+      }
+    }
+  }
+
+  residueRows.sort((a,b)=>a.number -b.number);
+  return residueRows;
+};
+
+const plddtTally = (structure)=>{
+  const plddtList = [];
+
+  for (const unit of structure.units) {
+    if (unit.kind!==0) continue;
+
+    const doneResidues = new Set();
+
+    for (let i = 0; i < unit.elements.length; i++) {
+      const location = StructureElement.Location.create(
+        structure,
+        unit,
+        unit.elements[i]
+      );
+
+      const residueIndex = StructureProperties.residue.key(location);
+      if (doneResidues.has(residueIndex)) continue;
+      doneResidues.add(residueIndex);
+
+      const score = StructureProperties.atom.B_iso_or_equiv(location);
+      if (Number.isFinite(score)&&score >= 0&&score <= 100) {
+        plddtList.push(score);
+      }
+    }
+  }
+
+  if (plddtList.length===0) return null;
+
+  const mean = plddtList.reduce((sum,score)=>sum +score,0)/plddtList.length;
+
+  return {
+    mean,
+    residueCount:plddtList.length,
+    veryHigh:plddtList.filter((s)=>s >= 90).length,
+    confident:plddtList.filter((s)=>s >= 70&&s < 90).length,
+    low:plddtList.filter((s)=>s >= 50&&s < 70).length,
+    veryLow:plddtList.filter((s)=>s < 50).length
+  };
+};
+
+const readClickTag = (label)=>{
+  const parts = label.split("|").map((part)=>part.trim());
+
+  let atom = null;
+  let residueCode = "";
+  let residueNumber = "";
+  let chain = "";
+
+  if (parts.length >= 3) {
+    
+    const atomMatch = parts[0].match(/^([A-Z0-9']+)/);
+    const residueMatch = parts[1].match(/^([A-Z]{3})\s+(-?\d+)/);
+
+    atom = atomMatch?.[1]||null;
+    residueCode = residueMatch?.[1]||"";
+    residueNumber = residueMatch?.[2]||"";
+    chain = parts[2]||"";
+  } else {
+    
+    const residueMatch = parts[0].match(/^([A-Z]{3})\s+(-?\d+)/);
+
+    residueCode = residueMatch?.[1]||"";
+    residueNumber = residueMatch?.[2]||"";
+    chain = parts[1]||"";
+  }
+
+  return {atom,residueCode,residueNumber,chain};
+};
+
+const plddtAtClick = (loci,source)=>{
+  let plddt = null;
+
+  if (StructureElement.Loci.is(loci)&&loci.elements.length > 0) {
+    const first = loci.elements[0];
+    const index =
+      OrderedSet.size(first.indices) > 0
+        ? OrderedSet.getAt(first.indices,0)
+        :undefined;
+
+    if (index!==undefined) {
+      const location = StructureElement.Location.create(
+        loci.structure,
+        first.unit,
+        first.unit.elements[index]
+      );
+
+      const value = StructureProperties.atom.B_iso_or_equiv(location);
+
+      if (Number.isFinite(value)&&value >= 0&&value <= 100&&source==="alphafold") {
+        plddt = value;
+      }
+    }
+  }
+
+  return plddt;
+};
+
+const huntRes = (structure,residueNumber,residueCode,atomName)=>{
+  let match = null;
+  let foundResidue = false;
+
+  for (const unit of structure.units) {
+    if (unit.kind!==0) continue;
+
+    for (let i = 0; i < unit.elements.length; i++) {
+      const location = StructureElement.Location.create(
+        structure,
+        unit,
+        unit.elements[i]
+      );
+
+      const number = StructureProperties.residue.auth_seq_id(location);
+      const code = StructureProperties.atom.label_comp_id(location);
+      const name = StructureProperties.atom.label_atom_id(location);
+
+      if (number!==residueNumber) continue;
+      if (residueCode&&code!==residueCode) continue;
+
+      foundResidue = true;
+
+      if (atomName&&name!==atomName) continue;
+
+      match = {unit,index:i,location,code,name,number};
+      break;
+    }
+
+    if (match) break;
+  }
+
+  return {match,foundResidue};
 };
 
 function ProteinViewer({
@@ -59,690 +268,487 @@ function ProteinViewer({
   paeMatrix,
   paeReferenceResidue
 }) {
-    const onResidueSelectRef = useRef(onResidueSelect);
-    onResidueSelectRef.current = onResidueSelect;
-    const viewerRef = useRef(null);
-    const molstarRef = useRef(null);
-    const [viewerReady, setViewerReady] = useState(0);
-    const overlayRef = useRef(null);
-    const atomOverlayRef = useRef(null);
-    const regionOverlayRef = useRef(null);
-
-    // Load the 3D model
-    useEffect(() => {
-      let cancelled = false;
-      let viewer = null;
-      let clickSubscription = null;
-      const container = viewerRef.current;
-      if (!container) return;
-
-      const host = document.createElement("div");
-      host.style.width = "100%";
-      host.style.height = "100%";
-      container.appendChild(host);
-
-      const startViewer = async () => {
-        try {
-          viewer = await Viewer.create(host, {
-            layoutIsExpanded: false,
-            layoutShowControls: false,
-            layoutShowSequence: false,
-            layoutShowLog: false,
-            layoutShowLeftPanel: false,
-            layoutShowRemoteState: false,
-            viewportShowExpand: false,
-            viewportShowControls: true,
-            viewportShowSelectionMode: false,
-            viewportBackgroundColor: "#05090d"
-          });
-          if (cancelled) {
-            viewer.dispose();
-            host.remove();
-            return;
-          }
-          molstarRef.current = viewer;
-        viewer.plugin.canvas3d?.setProps({
-          renderer: { backgroundColor: Color(0x07131f) }
-        });
-          const registry = viewer.plugin.representation.structure.themes.colorThemeRegistry;
-          if (!registry.types.some(([name]) => name === "foldcheck-pae")) {
-            registry.add(FoldCheckPAETheme);
-          }
-          if (source === "alphafold") {
-            await viewer.loadAlphaFoldDb(proteinId);
-          } else {
-            await viewer.loadPdb(proteinId);
-          }
-          if (cancelled) return;
-          setViewerReady((n) => n + 1);
-
-// Get the sequence and backbone positions
-const loadedStructure =
-  viewer.plugin.managers.structure.hierarchy.current.structures[0]
-    ?.cell?.obj?.data;
-
-if (loadedStructure) {
-  const residues = [];
-  const residueMap = new Map();
   
+  const lastClickRef = useRef(onResidueSelect);
+  lastClickRef.current = onResidueSelect;
 
-  for (const unit of loadedStructure.units) {
-    if (unit.kind !== 0) continue;
+  const viewportBox = useRef(null);
+  const molEngine = useRef(null);
+  const [molReady,setMolReady] = useState(0);
 
-    for (const element of unit.elements) {
-      const location = StructureElement.Location.create(
-        loadedStructure,
-        unit,
-        element
-      );
+  const resHighlight = useRef(null);
+  const atomHighlight = useRef(null);
+  const regionHighlight = useRef(null);
 
-      const number = StructureProperties.residue.auth_seq_id(location);
-      const code = StructureProperties.atom.label_comp_id(location);
-      const chain = StructureProperties.chain.auth_asym_id(location);
-      const key = `${chain}:${number}`;
+  
+  
+  
+  useEffect(()=>{
+    let quitEarly = false;
+    let engine = null;
+    let clickSub = null;
 
-      const atomName = StructureProperties.atom.label_atom_id(location);
-      const coordinates = [
-  unit.conformation.x(element),
-  unit.conformation.y(element),
-  unit.conformation.z(element)
-];
+    const holder = viewportBox.current;
+    if (!holder) return;
 
-      if (!residueMap.has(key)) {
-        const residue = {
-          number,
-          code,
-          chain,
-          atoms: [],
-          plddt: null,
-backbone: {}
-        };
+    const mount = document.createElement("div");
+    mount.style.width = "100%";
+    mount.style.height = "100%";
+    holder.appendChild(mount);
 
-        residueMap.set(key, residue);
-        residues.push(residue);
-      }
+    const startMol = async ()=>{
+      try {
+        engine = await Viewer.create(mount,{
+          layoutIsExpanded:false,
+          layoutShowControls:false,
+          layoutShowSequence:false,
+          layoutShowLog:false,
+          layoutShowLeftPanel:false,
+          layoutShowRemoteState:false,
+          viewportShowExpand:false,
+          viewportShowControls:true,
+          viewportShowSelectionMode:false,
+          viewportBackgroundColor:"#05090d"
+        });
 
-const residue = residueMap.get(key);
-if (source === "alphafold" && residue.plddt === null) {
-  const score = StructureProperties.atom.B_iso_or_equiv(location);
-  if (Number.isFinite(score) && score >= 0 && score <= 100) {
-    residue.plddt = score;
-  }
-}
-
-if (!residue.atoms.includes(atomName)) {
-  residue.atoms.push(atomName);
-}
-
-if (["N", "CA", "C"].includes(atomName)) {
-  residue.backbone[atomName] = coordinates;
-}
-
-    }
-  }
-
-  residues.sort((a, b) => a.number - b.number);
-  onGeometryLoaded?.(residues);
-  onSequenceLoaded?.(residues);
-}
-
-// Get AlphaFold confidence scores
-if (source === "alphafold") {
-  const structures = viewer.plugin.managers.structure.hierarchy.current.structures;
-  const structure = structures[0]?.cell?.obj?.data;
-
-  if (structure) {
-    const scores = [];
-
-    for (const unit of structure.units) {
-      if (unit.kind !== 0) continue;
-
-      const seenResidues = new Set();
-
-      for (let i = 0; i < unit.elements.length; i++) {
-        const location = StructureElement.Location.create(
-          structure,
-          unit,
-          unit.elements[i]
-        );
-
-        const residueIndex = StructureProperties.residue.key(location);
-
-        if (seenResidues.has(residueIndex)) continue;
-        seenResidues.add(residueIndex);
-
-        const score = StructureProperties.atom.B_iso_or_equiv(location);
-
-        if (Number.isFinite(score) && score >= 0 && score <= 100) {
-          scores.push(score);
+        
+        if (quitEarly) {
+          engine.dispose();
+          mount.remove();
+          return;
         }
-      }
-    }
 
-    if (scores.length > 0) {
-      const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+        molEngine.current = engine;
 
-      onProteinConfidence?.({
-        mean,
-        residueCount: scores.length,
-        veryHigh: scores.filter(score => score >= 90).length,
-        confident: scores.filter(score => score >= 70 && score < 90).length,
-        low: scores.filter(score => score >= 50 && score < 70).length,
-        veryLow: scores.filter(score => score < 50).length
-      });
-    }
-  }
-}
+        engine.plugin.canvas3d?.setProps({
+          renderer:{backgroundColor:Color(0x07131f)}
+        });
 
-// Handle clicks on the model
-clickSubscription = viewer.subscribe(
-  viewer.plugin.behaviors.interaction.click,
-  ({ current }) => {
-    if (current?.loci?.kind !== "element-loci") return;
-
-    const label = lociLabel(current.loci, {
-      reverse: true,
-      hidePrefix: true,
-      htmlStyling: false
-    });
-
-    const parts = label.split("|").map(part => part.trim());
-
-let atom = null;
-let residueCode = "";
-let residueNumber = "";
-let chain = "";
-
-if (parts.length >= 3) {
-  const atomMatch = parts[0].match(/^([A-Z0-9']+)/);
-  const residueMatch = parts[1].match(/^([A-Z]{3})\s+(-?\d+)/);
-
-  atom = atomMatch?.[1] || null;
-  residueCode = residueMatch?.[1] || "";
-  residueNumber = residueMatch?.[2] || "";
-  chain = parts[2] || "";
-} else {
-  const residueMatch = parts[0].match(/^([A-Z]{3})\s+(-?\d+)/);
-
-  residueCode = residueMatch?.[1] || "";
-  residueNumber = residueMatch?.[2] || "";
-  chain = parts[1] || "";
-}
-
-let plddt = null;
-
-const loci = current.loci;
-
-if (StructureElement.Loci.is(loci) && loci.elements.length > 0) {
-  const first = loci.elements[0];
-  const index =
-  OrderedSet.size(first.indices) > 0
-    ? OrderedSet.getAt(first.indices, 0)
-    : undefined;
-
-  if (index !== undefined) {
-    const location = StructureElement.Location.create(
-      loci.structure,
-      first.unit,
-      first.unit.elements[index]
-    );
-
-    const value = StructureProperties.atom.B_iso_or_equiv(location);
-
-    if (Number.isFinite(value) && value >= 0 && value <= 100 && source === "alphafold") {
-      plddt = value;
-    }
-  }
-}
-
-console.log("FoldCheck residue confidence:", {
-  residueCode,
-  residueNumber,
-  plddt
-});
-
-onResidueSelectRef.current?.({
-  residueCode,
-  residueNumber,
-  chain,
-  atom,
-  plddt
-});
-  }
-);
-
-        } catch (error) {
-          if (!cancelled) console.error("FoldCheck Mol* initialization failed:", error);
+        
+        const themeShelf = engine.plugin.representation.structure.themes.colorThemeRegistry;
+        if (!themeShelf.types.some(([name])=>name==="foldcheck-pae")) {
+          themeShelf.add(LilywhiteTint);
         }
-      };
-      startViewer();
-      return () => {
-        cancelled = true;
-        clickSubscription?.unsubscribe();
-        if (molstarRef.current === viewer) molstarRef.current = null;
-        overlayRef.current = null;
-        atomOverlayRef.current = null;
-        regionOverlayRef.current = null;
-        if (viewer) {
-          viewer.dispose();
-          host.remove();
+
+        if (source==="alphafold") {
+          await engine.loadAlphaFoldDb(proteinId);
         } else {
-          host.style.display = "none";
+          await engine.loadPdb(proteinId);
         }
-      };
-    }, [source, proteinId]);
 
-// Search and zoom to an atom or residue
-useEffect(() => {
-  if (!searchRequest) return;
+        if (quitEarly) return;
+        setMolReady((n)=>n +1);
 
-  const viewer = molstarRef.current;
+        
+        const foldedStruct = grabFold(engine);
 
-  if (!viewer) {
-    onSearchResult?.({
-      success: false,
-      message: "The 3D structure is still loading."
-    });
-    return;
-  }
+        if (foldedStruct) {
+          const residueRows = walkTheChain(foldedStruct,source);
+          onGeometryLoaded?.(residueRows);
+          onSequenceLoaded?.(residueRows);
+        }
 
-  const structure =
-    viewer.plugin.managers.structure.hierarchy.current.structures[0]
-      ?.cell?.obj?.data;
+        
+        if (source==="alphafold") {
+          const structure = grabFold(engine);
 
-  if (!structure) {
-    onSearchResult?.({
-      success: false,
-      message: "No loaded structure was found."
-    });
-    return;
-  }
+          const summary = structure&&plddtTally(structure);
 
-  const { residueNumber, residueCode, atomName } = searchRequest;
+          if (summary) onProteinConfidence?.(summary);
+        }
 
-  let match = null;
-  let foundResidue = false;
+        
+        clickSub = engine.subscribe(
+          engine.plugin.behaviors.interaction.click,
+          ({current})=>{
+            if (current?.loci?.kind!=="element-loci") return;
 
-  for (const unit of structure.units) {
-    if (unit.kind !== 0) continue;
+            const label = lociLabel(current.loci,{
+              reverse:true,
+              hidePrefix:true,
+              htmlStyling:false
+            });
 
-    for (let i = 0; i < unit.elements.length; i++) {
-      const location = StructureElement.Location.create(
-        structure,
-        unit,
-        unit.elements[i]
-      );
+            const {atom,residueCode,residueNumber,chain} = readClickTag(label);
+            const plddt = plddtAtClick(current.loci,source);
 
-      const number = StructureProperties.residue.auth_seq_id(location);
-      const code = StructureProperties.atom.label_comp_id(location);
-      const name = StructureProperties.atom.label_atom_id(location);
+            lastClickRef.current?.({
+              residueCode,
+              residueNumber,
+              chain,
+              atom,
+              plddt
+            });
+          }
+        );
+      } catch (error) {
+        if (!quitEarly) console.error("FoldCheck Mol*initialization failed:",error);
+      }
+    };
 
-      if (number !== residueNumber) continue;
-      if (residueCode && code !== residueCode) continue;
+    startMol();
 
-      foundResidue = true;
+    
+    return ()=>{
+      quitEarly = true;
+      clickSub?.unsubscribe();
 
-      if (atomName && name !== atomName) continue;
+      if (molEngine.current===engine) molEngine.current = null;
 
-      match = { unit, index: i, location, code, name, number };
-      break;
+      resHighlight.current = null;
+      atomHighlight.current = null;
+      regionHighlight.current = null;
+
+      if (engine) {
+        engine.dispose();
+        mount.remove();
+      } else {
+        mount.style.display = "none";
+      }
+    };
+  },[source,proteinId]);
+
+  
+  
+  
+  useEffect(()=>{
+    if (!searchRequest) return;
+
+    const engine = molEngine.current;
+
+    if (!engine) {
+      onSearchResult?.({
+        success:false,
+        message:"The 3D structure is still loading."
+      });
+      return;
     }
 
-    if (match) break;
-  }
+    const structure = grabFold(engine);
 
-  if (!match) {
-    onSearchResult?.({
-      success: false,
-      message: foundResidue
-        ? `Residue ${residueNumber} was found, but atom ${atomName} was not.`
-        : `No matching residue ${residueNumber} was found.`
-    });
-    return;
-  }
-
-  const plugin = viewer.plugin;
-
-const addResidueOverlay = async () => {
-  if (overlayRef.current) {
-    await plugin.state.data
-      .build()
-      .delete(overlayRef.current)
-      .commit();
-
-    overlayRef.current = null;
-  }
-
-  const structureRef =
-    plugin.managers.structure.hierarchy.current.structures[0];
-
-  if (!structureRef) return;
-
-  const expression = MS.struct.generator.atomGroups({
-    "residue-test": MS.core.rel.eq([
-      MS.struct.atomProperty.macromolecular.auth_seq_id(),
-      residueNumber
-    ]),
-    "group-by": MS.struct.atomProperty.macromolecular.residueKey()
-  });
-
-  const component =
-    await plugin.builders.structure.tryCreateComponentFromExpression(
-      structureRef.cell,
-      expression,
-      "foldcheck-residue-overlay",
-      { label: `${match.code} ${match.number}` }
-    );
-
-  if (!component) return;
-
-    if (atomOverlayRef.current) {
-    await plugin.state.data
-      .build()
-      .delete(atomOverlayRef.current)
-      .commit();
-
-    atomOverlayRef.current = null;
-  }
-
-  overlayRef.current = component.ref;
-
-  await plugin.builders.structure.representation.addRepresentation(
-    component,
-    {
-      type: "ball-and-stick",
-      color: "element-symbol"
+    if (!structure) {
+      onSearchResult?.({
+        success:false,
+        message:"No loaded structure was found."
+      });
+      return;
     }
-  );
 
-    if (atomName) {
-    const atomExpression = MS.struct.generator.atomGroups({
-      "atom-test": MS.core.logic.and([
-        MS.core.rel.eq([
+    const {residueNumber,residueCode,atomName} = searchRequest;
+
+    const {match,foundResidue} = huntRes(structure,residueNumber,residueCode,atomName);
+
+    if (!match) {
+      onSearchResult?.({
+        success:false,
+        message:foundResidue
+          ? `Residue ${residueNumber} was found, but atom ${atomName} was not.`
+          : `No matching residue ${residueNumber} was found.`
+      });
+      return;
+    }
+
+    const plugin = engine.plugin;
+
+    
+    
+    const addResidueOverlay = async ()=>{
+      if (resHighlight.current) {
+        await binTheOverlay(plugin,resHighlight.current);
+        resHighlight.current = null;
+      }
+
+      const structureRef = plugin.managers.structure.hierarchy.current.structures[0];
+      if (!structureRef) return;
+
+      const expression = MS.struct.generator.atomGroups({
+        "residue-test":MS.core.rel.eq([
           MS.struct.atomProperty.macromolecular.auth_seq_id(),
           residueNumber
         ]),
-        MS.core.rel.eq([
-          MS.struct.atomProperty.macromolecular.label_atom_id(),
-          atomName
-        ])
-      ])
-    });
+        "group-by":MS.struct.atomProperty.macromolecular.residueKey()
+      });
 
-    const atomComponent =
-      await plugin.builders.structure.tryCreateComponentFromExpression(
+      const component = await plugin.builders.structure.tryCreateComponentFromExpression(
         structureRef.cell,
-        atomExpression,
-        "foldcheck-target-atom",
-        { label: `${match.code} ${match.number} ${atomName}` }
+        expression,
+        "foldcheck-residue-overlay",
+        { label: `${match.code} ${match.number}` }
       );
 
-    if (atomComponent) {
-      atomOverlayRef.current = atomComponent.ref;
+      if (!component) return;
 
-      await plugin.builders.structure.representation.addRepresentation(
-        atomComponent,
-        {
-          type: "ball-and-stick",
-          color: "uniform",
-          colorParams: {
-            value: 0xff8c00
-          },
-          size: "uniform",
-          sizeParams: {
-            value: 0.45
-          }
+      if (atomHighlight.current) {
+        await binTheOverlay(plugin,atomHighlight.current);
+        atomHighlight.current = null;
+      }
+
+      resHighlight.current = component.ref;
+
+      await plugin.builders.structure.representation.addRepresentation(component,{
+        type:"ball-and-stick",
+        color:"element-symbol"
+      });
+
+      if (atomName) {
+        const atomExpression = MS.struct.generator.atomGroups({
+          "atom-test":MS.core.logic.and([
+            MS.core.rel.eq([
+              MS.struct.atomProperty.macromolecular.auth_seq_id(),
+              residueNumber
+            ]),
+            MS.core.rel.eq([
+              MS.struct.atomProperty.macromolecular.label_atom_id(),
+              atomName
+            ])
+          ])
+        });
+
+        const atomComponent = await plugin.builders.structure.tryCreateComponentFromExpression(
+          structureRef.cell,
+          atomExpression,
+          "foldcheck-target-atom",
+          { label: `${match.code} ${match.number} ${atomName}` }
+        );
+
+        if (atomComponent) {
+          atomHighlight.current = atomComponent.ref;
+
+          await plugin.builders.structure.representation.addRepresentation(atomComponent,{
+            type:"ball-and-stick",
+            color:"uniform",
+            colorParams:{value:0xff8c00},
+            size:"uniform",
+            sizeParams:{value:0.45}
+          });
         }
-      );
-    }
-  }
+      }
+    };
 
-};
-
-addResidueOverlay().catch(error => {
-  console.error("FoldCheck residue overlay failed:", error);
-});
-
-  const loci = StructureElement.Loci(structure, [
-    {
-      unit: match.unit,
-      indices: OrderedSet.ofSingleton(match.index)
-    }
-  ]);
-
-viewer.plugin.managers.interactivity.lociSelects.deselectAll();
-
-viewer.plugin.managers.interactivity.lociSelects.select({
-  loci
-});
-
-viewer.plugin.managers.camera.focusLoci(loci, {
-  minRadius: atomName ? 8 : 12,
-  extraRadius: atomName ? 6 : 8,
-  durationMs: 350
-});
-
-  const score = StructureProperties.atom.B_iso_or_equiv(
-    match.location
-  );
-
-  const plddt =
-    source === "alphafold" &&
-    Number.isFinite(score) &&
-    score >= 0 &&
-    score <= 100
-      ? score
-      : null;
-
-  onResidueSelectRef.current?.({
-    residueCode: match.code,
-    residueNumber: String(match.number),
-    chain: StructureProperties.chain.auth_asym_id(match.location),
-    atom: atomName ? match.name : null,
-    plddt
-  });
-
-  onSearchResult?.({
-    success: true,
-    atomSearch: Boolean(atomName),
-    message: atomName
-      ? `Found ${match.code} ${match.number} · ${match.name}`
-      : `Found ${match.code} ${match.number}`
-  });
-}, [searchRequest, source]);
-// Highlight a selected region
-useEffect(() => {
-  if (!selectedRegion) return;
-
-  const viewer = molstarRef.current;
-  if (!viewer) return;
-
-  const plugin = viewer.plugin;
-
-  const structureRef =
-    plugin.managers.structure.hierarchy.current.structures[0];
-
-  const structure = structureRef?.cell?.obj?.data;
-  if (!structure) return;
-
-  const start = Number(selectedRegion.start);
-  const end = Number(selectedRegion.end);
-
-  if (!Number.isInteger(start) || !Number.isInteger(end) || start > end) {
-    return;
-  }
-
-  let cancelled = false;
-
-  const highlightRegion = async () => {
-    
-    if (regionOverlayRef.current) {
-      await plugin.state.data
-        .build()
-        .delete(regionOverlayRef.current)
-        .commit();
-
-      regionOverlayRef.current = null;
-    }
-
-    if (cancelled) return;
-
-    const expression = MS.struct.generator.atomGroups({
-  "residue-test": MS.core.rel.inRange([
-    MS.struct.atomProperty.macromolecular.auth_seq_id(),
-    start,
-    end
-  ]),
-  "group-by": MS.struct.atomProperty.macromolecular.residueKey()
-});
-    
-    const selection = StructureQueryHelper.createAndRun(
-      structure,
-      expression
-    );
-
-    const loci = StructureSelection.toLociWithSourceUnits(
-      selection.selection
-    );
-
-    plugin.managers.interactivity.lociSelects.deselectAll();
-
-plugin.managers.interactivity.lociSelects.select({ loci });
-
-    plugin.managers.camera.focusLoci(loci, {
-      minRadius: 12,
-      extraRadius: 8,
-      durationMs: 450
+    addResidueOverlay().catch((error)=>{
+      console.error("FoldCheck residue overlay failed:",error);
     });
-  };
 
-  highlightRegion().catch((error) => {
-    console.error("FoldCheck region highlight failed:", error);
-  });
+    
+    const loci = StructureElement.Loci(structure,[
+      {
+        unit:match.unit,
+        indices:OrderedSet.ofSingleton(match.index)
+      }
+    ]);
 
-  return () => {
-    cancelled = true;
-  };
-}, [selectedRegion, proteinId]);
+    engine.plugin.managers.interactivity.lociSelects.deselectAll();
+    engine.plugin.managers.interactivity.lociSelects.select({loci});
 
-// Update PAE colours
-useEffect(() => {
-  const viewer = molstarRef.current;
-  if (!viewer || !paeMatrix?.length || !paeReferenceResidue) return;
-  const plugin = viewer.plugin;
-  const structures = plugin.managers.structure.hierarchy.current.structures;
-  const components = structures.flatMap((structure) => structure.components);
-  if (!components.length) return;
+    engine.plugin.managers.camera.focusLoci(loci,{
+      minRadius:atomName ? 8 :12,
+      extraRadius:atomName ? 6 :8,
+      durationMs:350
+    });
 
-  FoldCheckPAETheme.currentMatrix = paeMatrix;
-  plugin.managers.structure.component.updateRepresentationsTheme(components, {
-    color: "foldcheck-pae",
-    colorParams: { referenceResidue: Number(paeReferenceResidue) }
-  }).catch((error) => console.error("FoldCheck PAE colouring failed:", error));
-}, [paeMatrix, paeReferenceResidue, viewerReady]);
+    const score = StructureProperties.atom.B_iso_or_equiv(match.location);
 
+    const plddt =
+      source==="alphafold"&&Number.isFinite(score)&&score >= 0&&score <= 100
+        ? score
+        :null;
 
-  useEffect(() => {
-    if (!linkedResidue || !viewerReady) return;
-    const plugin = molstarRef.current?.plugin;
+    lastClickRef.current?.({
+      residueCode:match.code,
+      residueNumber:String(match.number),
+      chain:StructureProperties.chain.auth_asym_id(match.location),
+      atom:atomName ? match.name :null,
+      plddt
+    });
+
+    onSearchResult?.({
+      success:true,
+      atomSearch:Boolean(atomName),
+      message:atomName
+        ? `Found ${match.code} ${match.number} · ${match.name}`
+        : `Found ${match.code} ${match.number}`
+    });
+  },[searchRequest,source]);
+
+  
+  
+  
+  useEffect(()=>{
+    if (!selectedRegion) return;
+
+    const engine = molEngine.current;
+    if (!engine) return;
+
+    const plugin = engine.plugin;
+    const structure = grabFold(engine);
+    if (!structure) return;
+
+    const start = Number(selectedRegion.start);
+    const end = Number(selectedRegion.end);
+
+    if (!Number.isInteger(start)||!Number.isInteger(end)||start > end) return;
+
+    let quitEarly = false;
+
+    const highlightRegion = async ()=>{
+      if (regionHighlight.current) {
+        await binTheOverlay(plugin,regionHighlight.current);
+        regionHighlight.current = null;
+      }
+
+      if (quitEarly) return;
+
+      const expression = MS.struct.generator.atomGroups({
+        "residue-test":MS.core.rel.inRange([
+          MS.struct.atomProperty.macromolecular.auth_seq_id(),
+          start,
+          end
+        ]),
+        "group-by":MS.struct.atomProperty.macromolecular.residueKey()
+      });
+
+      const selection = StructureQueryHelper.createAndRun(structure,expression);
+      const loci = StructureSelection.toLociWithSourceUnits(selection.selection);
+
+      plugin.managers.interactivity.lociSelects.deselectAll();
+      plugin.managers.interactivity.lociSelects.select({loci});
+
+      plugin.managers.camera.focusLoci(loci,{
+        minRadius:12,
+        extraRadius:8,
+        durationMs:450
+      });
+    };
+
+    highlightRegion().catch((error)=>{
+      console.error("FoldCheck region highlight failed:",error);
+    });
+
+    return ()=>{
+      quitEarly = true;
+    };
+  },[selectedRegion,proteinId]);
+
+  
+  
+  
+  useEffect(()=>{
+    const engine = molEngine.current;
+    if (!engine||!paeMatrix?.length||!paeReferenceResidue) return;
+
+    const plugin = engine.plugin;
+    const structures = plugin.managers.structure.hierarchy.current.structures;
+    const components = structures.flatMap((structure)=>structure.components);
+
+    if (!components.length) return;
+
+    LilywhiteTint.currentMatrix = paeMatrix;
+
+    plugin.managers.structure.component
+      .updateRepresentationsTheme(components,{
+        color:"foldcheck-pae",
+        colorParams:{referenceResidue:Number(paeReferenceResidue)}
+      })
+      .catch((error)=>console.error("FoldCheck PAE colouring failed:",error));
+  },[paeMatrix,paeReferenceResidue,molReady]);
+
+  
+  
+  
+  useEffect(()=>{
+    if (!linkedResidue||!molReady) return;
+
+    const plugin = molEngine.current?.plugin;
     const structure = plugin?.managers.structure.hierarchy.current.structures[0]?.cell?.obj?.data;
     const number = Number(linkedResidue.number ?? linkedResidue.residueNumber);
-    if (!structure || !Number.isFinite(number)) return;
+
+    if (!structure||!Number.isFinite(number)) return;
+
     try {
       const tests = {
-        "residue-test": MS.core.rel.eq([
+        "residue-test":MS.core.rel.eq([
           MS.struct.atomProperty.macromolecular.auth_seq_id(),
           number
         ]),
-        "group-by": MS.struct.atomProperty.macromolecular.residueKey()
+        "group-by":MS.struct.atomProperty.macromolecular.residueKey()
       };
+
       if (linkedResidue.chain) {
         tests["chain-test"] = MS.core.rel.eq([
           MS.struct.atomProperty.macromolecular.auth_asym_id(),
           linkedResidue.chain
         ]);
       }
+
       const expression = MS.struct.generator.atomGroups(tests);
-      const result = StructureQueryHelper.createAndRun(structure, expression);
+      const result = StructureQueryHelper.createAndRun(structure,expression);
       const loci = StructureSelection.toLociWithSourceUnits(result.selection);
+
       if (!loci.elements.length) {
-        console.warn("FoldCheck: linked residue not found", linkedResidue);
+        console.warn("FoldCheck:linked residue not found",linkedResidue);
         return;
       }
+
       plugin.managers.interactivity.lociSelects.deselectAll();
-      plugin.managers.interactivity.lociSelects.select({ loci });
-      plugin.managers.camera.focusLoci(loci, {
-        minRadius: 12,
-        extraRadius: 8,
-        durationMs: 350
+      plugin.managers.interactivity.lociSelects.select({loci});
+
+      plugin.managers.camera.focusLoci(loci,{
+        minRadius:12,
+        extraRadius:8,
+        durationMs:350
       });
     } catch (error) {
-      console.error("FoldCheck linked selection failed:", error);
+      console.error("FoldCheck linked selection failed:",error);
     }
-  }, [linkedResidue, viewerReady]);
+  },[linkedResidue,molReady]);
 
-useEffect(() => {
-  if (!resetViewRequest) return;
+  
+  
+  
+  useEffect(()=>{
+    if (!resetViewRequest) return;
 
-  const viewer = molstarRef.current;
-  if (!viewer) return;
+    const engine = molEngine.current;
+    if (!engine) return;
 
- viewer.plugin.managers.interactivity.lociHighlights.clearHighlights();
-viewer.plugin.managers.interactivity.lociSelects.deselectAll();
-if (overlayRef.current) {
-  const overlay = overlayRef.current;
-  overlayRef.current = null;
+    const plugin = engine.plugin;
 
-  viewer.plugin.state.data
-    .build()
-    .delete(overlay)
-    .commit()
-    .catch(error => {
-      console.error("FoldCheck overlay reset failed:", error);
-    });
-}
+    plugin.managers.interactivity.lociHighlights.clearHighlights();
+    plugin.managers.interactivity.lociSelects.deselectAll();
 
-if (atomOverlayRef.current) {
-  const atomOverlay = atomOverlayRef.current;
-  atomOverlayRef.current = null;
+    
+    const overlayRefs = [
+      ["residue overlay",resHighlight],
+      ["atom overlay",atomHighlight],
+      ["region overlay",regionHighlight]
+    ];
 
-  viewer.plugin.state.data
-    .build()
-    .delete(atomOverlay)
-    .commit()
-    .catch(error => {
-      console.error("FoldCheck atom overlay reset failed:", error);
-    });
-}
+    for (const [label,slot] of overlayRefs) {
+      if (!slot.current) continue;
 
-if (regionOverlayRef.current) {
-  const regionOverlay = regionOverlayRef.current;
-  regionOverlayRef.current = null;
+      const overlay = slot.current;
+      slot.current = null;
 
-  viewer.plugin.state.data
-    .build()
-    .delete(regionOverlay)
-    .commit()
-    .catch(error => {
-      console.error("FoldCheck region overlay reset failed:", error);
-    });
-}
+      binTheOverlay(plugin,overlay).catch((error)=>{
+        console.error(`FoldCheck ${label} reset failed:`, error);
+      });
+    }
 
-viewer.plugin.canvas3d?.requestCameraReset();
-}, [resetViewRequest]);
+    plugin.canvas3d?.requestCameraReset();
+  },[resetViewRequest]);
 
-    return (
-        <div
-        ref={viewerRef}
-        style={{
-            position: "relative",
-            width: "100%",
-            height: "600px",
-            overflow: "hidden",
-            borderRadius: "24px"
-        }}
-        />
-    );
+  return (
+    <div
+      ref={viewportBox}
+      style={{
+        position:"relative",
+        width:"100%",
+        height:"600px",
+        overflow:"hidden",
+        borderRadius:"24px"
+      }}
+    />
+  );
 }
 
 export default ProteinViewer;
