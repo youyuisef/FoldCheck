@@ -1,30 +1,23 @@
-
 const aminoAcids = {
   ALA: {
-    name: "Alanine",
     letter: "A",
-    formula: "C3H7NO2",
+    name: "Alanine",
     mass: 89.09,
+    formula: "C3H7NO2",
     category: "Nonpolar",
     sideChain: "–CH₃",
-    description: "A small amino acid that helps proteins pack together. Its simple methyl side chain is useful in many protein structures.",
     waterAffinity: "Hydrophobic",
+    description: "A small amino acid that helps proteins pack together. Its simple methyl side chain is useful in many protein structures.",
     inProteins: "Often contributes to stable protein cores and alpha helices."
   },
 
-
-
-  
-  ARG: {
-    name: "Arginine",
-    letter: "R",
-    formula: "C6H14N4O2",
-    mass: 174.20,
-    category: "Positively charged",
-    sideChain: "Guanidinium-containing",
-    description: "A basic amino acid that usually carries a positive charge at physiological pH. It can interact with negatively charged molecules.",
-    waterAffinity: "Hydrophilic",
-    inProteins: "Forms salt bridges, hydrogen bonds and interactions with DNA."
+  ARG:{
+    name:"Arginine",letter:"R",formula:"C6H14N4O2",mass:174.20,
+    category:"Positively charged",
+    sideChain:"Guanidinium-containing",
+    description:"A basic amino acid that usually carries a positive charge at physiological pH. It can interact with negatively charged molecules.",
+    waterAffinity:"Hydrophilic",
+    inProteins:"Forms salt bridges, hydrogen bonds and interactions with DNA."
   },
 
   ASN: {
@@ -39,23 +32,20 @@ const aminoAcids = {
     inProteins: "Helps stabilise structures through hydrogen bonding."
   },
 
-  ASP: {
-    name: "Aspartic acid",
-    letter: "D",
-    formula: "C4H7NO4",
-    mass: 133.10,
-    category: "Negatively charged",
-    sideChain: "Carboxyl-containing",
-    description: "An acidic amino acid that is usually negatively charged at physiological pH.",
-    waterAffinity: "Hydrophilic",
-    inProteins: "Often forms salt bridges and participates in enzyme reactions."
+  ASP:{
+    letter:"D",
+    name:"Aspartic acid",
+    formula:"C4H7NO4",
+    mass:133.10,
+    sideChain:"Carboxyl-containing",
+    category:"Negatively charged",
+    waterAffinity:"Hydrophilic",
+    description:"An acidic amino acid that is usually negatively charged at physiological pH.",
+    inProteins:"Often forms salt bridges and participates in enzyme reactions."
   },
 
   CYS: {
-    name: "Cysteine",
-    letter: "C",
-    formula: "C3H7NO2S",
-    mass: 121.16,
+    name: "Cysteine", letter: "C", formula: "C3H7NO2S", mass: 121.16,
     category: "Polar, uncharged",
     sideChain: "–CH₂–SH",
     description: "Contains sulfur in a thiol group. Two cysteine residues can form a disulfide bond under suitable conditions.",
@@ -63,23 +53,23 @@ const aminoAcids = {
     inProteins: "Disulfide bonds can help stabilise a protein's folded structure."
   },
 
-  GLN: {
-    name: "Glutamine",
-    letter: "Q",
-    formula: "C5H10N2O3",
-    mass: 146.15,
-    category: "Polar, uncharged",
-    sideChain: "Amide-containing",
-    description: "A polar amino acid with a relatively long side chain that can form hydrogen bonds.",
-    waterAffinity: "Hydrophilic",
-    inProteins: "Often participates in molecular recognition and hydrogen bonding."
+  GLN:{
+    name:"Glutamine",
+    letter:"Q",
+    formula:"C5H10N2O3",
+    mass:146.15,
+    category:"Polar, uncharged",
+    sideChain:"Amide-containing",
+    description:"A polar amino acid with a relatively long side chain that can form hydrogen bonds.",
+    waterAffinity:"Hydrophilic",
+    inProteins:"Often participates in molecular recognition and hydrogen bonding."
   },
 
   GLU: {
     name: "Glutamic acid",
     letter: "E",
-    formula: "C5H9NO4",
     mass: 147.13,
+    formula: "C5H9NO4",
     category: "Negatively charged",
     sideChain: "Carboxyl-containing",
     description: "An acidic amino acid that usually carries a negative charge at physiological pH.",
@@ -87,16 +77,13 @@ const aminoAcids = {
     inProteins: "Can form salt bridges and participate in enzyme catalysis."
   },
 
-  GLY: {
-    name: "Glycine",
-    letter: "G",
-    formula: "C2H5NO2",
-    mass: 75.07,
-    category: "Special: flexible",
-    sideChain: "–H",
-    description: "The smallest amino acid. Because its side chain is just hydrogen, its backbone has greater flexibility than most other amino acids.",
-    waterAffinity: "Context-dependent",
-    inProteins: "Commonly found in tight turns and regions requiring flexibility."
+  GLY:{
+    letter:"G",name:"Glycine",formula:"C2H5NO2",mass:75.07,
+    category:"Special: flexible",
+    sideChain:"–H",
+    description:"The smallest amino acid. Because its side chain is just hydrogen, its backbone has greater flexibility than most other amino acids.",
+    waterAffinity:"Context-dependent",
+    inProteins:"Commonly found in tight turns and regions requiring flexibility."
   },
 
   HIS: {
@@ -111,16 +98,12 @@ const aminoAcids = {
     inProteins: "Frequently involved in enzyme catalysis and metal binding."
   },
 
-  ILE: {
-    name: "Isoleucine",
-    letter: "I",
-    formula: "C6H13NO2",
-    mass: 131.17,
-    category: "Nonpolar",
-    sideChain: "Branched hydrocarbon",
-    description: "A hydrophobic amino acid with a branched side chain that tends to avoid water.",
-    waterAffinity: "Hydrophobic",
-    inProteins: "Often helps form tightly packed protein cores."
+  ILE:{
+    name:"Isoleucine",letter:"I",formula:"C6H13NO2",mass:131.17,
+    category:"Nonpolar",sideChain:"Branched hydrocarbon",
+    description:"A hydrophobic amino acid with a branched side chain that tends to avoid water.",
+    waterAffinity:"Hydrophobic",
+    inProteins:"Often helps form tightly packed protein cores."
   },
 
   LEU: {
@@ -135,23 +118,20 @@ const aminoAcids = {
     inProteins: "Contributes to protein packing and is frequently found in alpha helices."
   },
 
-  LYS: {
-    name: "Lysine",
-    letter: "K",
-    formula: "C6H14N2O2",
-    mass: 146.19,
-    category: "Positively charged",
-    sideChain: "Terminal amino group",
-    description: "A basic amino acid whose side chain usually carries a positive charge at physiological pH.",
-    waterAffinity: "Hydrophilic",
-    inProteins: "Often interacts with negatively charged groups and can undergo chemical modifications."
+  LYS:{
+    name:"Lysine",
+    letter:"K",
+    formula:"C6H14N2O2",
+    mass:146.19,
+    category:"Positively charged",
+    sideChain:"Terminal amino group",
+    description:"A basic amino acid whose side chain usually carries a positive charge at physiological pH.",
+    waterAffinity:"Hydrophilic",
+    inProteins:"Often interacts with negatively charged groups and can undergo chemical modifications."
   },
 
   MET: {
-    name: "Methionine",
-    letter: "M",
-    formula: "C5H11NO2S",
-    mass: 149.21,
+    name: "Methionine", letter: "M", formula: "C5H11NO2S", mass: 149.21,
     category: "Nonpolar",
     sideChain: "Sulfur-containing thioether",
     description: "Contains sulfur and commonly serves as the first amino acid added when a protein is made.",
@@ -159,16 +139,13 @@ const aminoAcids = {
     inProteins: "Contributes to hydrophobic packing. The initial methionine may be removed after translation."
   },
 
-  PHE: {
-    name: "Phenylalanine",
-    letter: "F",
-    formula: "C9H11NO2",
-    mass: 165.19,
-    category: "Aromatic, nonpolar",
-    sideChain: "Phenyl ring",
-    description: "Contains a large aromatic ring that tends to avoid water and interact with other nonpolar groups.",
-    waterAffinity: "Hydrophobic",
-    inProteins: "Often contributes to protein core packing and aromatic interactions."
+  PHE:{
+    name:"Phenylalanine",letter:"F",formula:"C9H11NO2",mass:165.19,
+    category:"Aromatic, nonpolar",
+    sideChain:"Phenyl ring",
+    description:"Contains a large aromatic ring that tends to avoid water and interact with other nonpolar groups.",
+    waterAffinity:"Hydrophobic",
+    inProteins:"Often contributes to protein core packing and aromatic interactions."
   },
 
   PRO: {
@@ -183,16 +160,13 @@ const aminoAcids = {
     inProteins: "Often influences turns and can disrupt or cap alpha helices."
   },
 
-  SER: {
-    name: "Serine",
-    letter: "S",
-    formula: "C3H7NO3",
-    mass: 105.09,
-    category: "Polar, uncharged",
-    sideChain: "–CH₂–OH",
-    description: "Contains a hydroxyl group that can form hydrogen bonds and undergo phosphorylation.",
-    waterAffinity: "Hydrophilic",
-    inProteins: "Important in enzyme reactions, hydrogen bonding and cell signalling."
+  SER:{
+    name:"Serine",letter:"S",formula:"C3H7NO3",mass:105.09,
+    category:"Polar, uncharged",
+    sideChain:"–CH₂–OH",
+    description:"Contains a hydroxyl group that can form hydrogen bonds and undergo phosphorylation.",
+    waterAffinity:"Hydrophilic",
+    inProteins:"Important in enzyme reactions, hydrogen bonding and cell signalling."
   },
 
   THR: {
@@ -207,16 +181,16 @@ const aminoAcids = {
     inProteins: "Helps with molecular interactions and protein regulation."
   },
 
-  TRP: {
-    name: "Tryptophan",
-    letter: "W",
-    formula: "C11H12N2O2",
-    mass: 204.23,
-    category: "Aromatic",
-    sideChain: "Indole ring",
-    description: "A large aromatic amino acid whose indole ring can participate in hydrophobic interactions and some hydrogen bonds.",
-    waterAffinity: "Mostly hydrophobic",
-    inProteins: "Often helps stabilise protein structures and molecular interactions."
+  TRP:{
+    name:"Tryptophan",
+    letter:"W",
+    formula:"C11H12N2O2",
+    mass:204.23,
+    category:"Aromatic",
+    sideChain:"Indole ring",
+    description:"A large aromatic amino acid whose indole ring can participate in hydrophobic interactions and some hydrogen bonds.",
+    waterAffinity:"Mostly hydrophobic",
+    inProteins:"Often helps stabilise protein structures and molecular interactions."
   },
 
   TYR: {
@@ -231,25 +205,24 @@ const aminoAcids = {
     inProteins: "Can form hydrogen bonds and be phosphorylated during cell signalling."
   },
 
-  VAL: {
-    name: "Valine",
-    letter: "V",
-    formula: "C5H11NO2",
-    mass: 117.15,
-    category: "Nonpolar",
-    sideChain: "Branched hydrocarbon",
-    description: "A hydrophobic amino acid with a branched side chain that often contributes to protein stability.",
-    waterAffinity: "Hydrophobic",
-    inProteins: "Commonly contributes to the tightly packed interiors of proteins."
+  VAL:{
+    letter:"V",
+    name:"Valine",
+    formula:"C5H11NO2",
+    mass:117.15,
+    category:"Nonpolar",
+    sideChain:"Branched hydrocarbon",
+    description:"A hydrophobic amino acid with a branched side chain that often contributes to protein stability.",
+    waterAffinity:"Hydrophobic",
+    inProteins:"Commonly contributes to the tightly packed interiors of proteins."
   }
 };
 
-export const aminoAcidList = Object.values(aminoAcids).sort(
-  (a, b) => a.name.localeCompare(b.name)
-);
+export const aminoAcidList = Object.values(aminoAcids).sort((a,b)=>a.name.localeCompare(b.name));
 
-export const aminoAcidGroups = [
-  ...new Set(aminoAcidList.map((aminoAcid) => aminoAcid.category))
-];
+export const aminoAcidGroups = [];
+for (const aa of aminoAcidList) {
+  if (!aminoAcidGroups.includes(aa.category)) aminoAcidGroups.push(aa.category);
+}
 
 export default aminoAcids;
